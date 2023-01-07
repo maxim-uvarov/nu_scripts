@@ -1,8 +1,12 @@
-def mdline [text] {
+def mdown [
+	text
+	--mdcolour (-c) = default
+] {
+
 	let t1 =  {
-		'**': $'(ansi -e {attr: b})', 
-		'*': $'(ansi -e {attr: i})', 
-		'_': $'(ansi -e {attr: u})'
+		'**': $'(ansi -e {fg: ($mdcolour) attr: b})', 
+		'*': $'(ansi -e {fg: ($mdcolour) attr: i})', 
+		'_': $'(ansi -e {fg: ($mdcolour) attr: u})'
 	}
 
 	let t2 = {
@@ -12,28 +16,19 @@ def mdline [text] {
 	}
 
 	$text
-    | split row " "
-    | each {
-        |it2|
-        $it2
-        | parse -r "^(?<start>\\*{1,2}|_)?(?<a>.+?)(?<end>\\*{1,2}|_)?$"
-        | upsert fin {
-            |i|  $"($t1 | get -i $i.start)($i.a)($t2 | get -i $i.end)"
-        }
-        | get fin
-        | str join " "
-     } | str join " "
- }
-
-def mdown [text] {
-
-	let rows1 = (
-		$text
-		| split row "\n"
-		| each {
-			|it| mdline $it
-		} | str join "\n"
-	)
-
-	$rows1
+	| split row "\n"
+	| each {
+		|l| $l 
+	    | split row " "
+	    | each {
+	        |w|
+	        $w
+	        | parse -r "^(?<start>\\*{1,2}|_)?(?<a>.+?)(?<end>\\*{1,2}|_)?$"
+	        | upsert fin {
+	            |i|  $"($t1 | get -i $i.start)($i.a)($t2 | get -i $i.end)"
+	        }
+	        | get fin
+	        | str join " "
+	     } | str join " "
+	} | str join "\n"
 }
