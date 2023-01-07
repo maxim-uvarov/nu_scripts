@@ -1,12 +1,12 @@
 def mdown [
 	text
-	--mdcolour (-c) = default
+	--mdcolor (-c) = default
 ] {
 
 	let t1 =  {
-		'**': $'(ansi -e {fg: ($mdcolour) attr: b})', 
-		'*': $'(ansi -e {fg: ($mdcolour) attr: i})', 
-		'_': $'(ansi -e {fg: ($mdcolour) attr: u})'
+		'**': $'(ansi -e {fg: ($mdcolor) attr: b})', 
+		'*': $'(ansi -e {fg: ($mdcolor) attr: i})', 
+		'_': $'(ansi -e {fg: ($mdcolor) attr: u})'
 	}
 
 	let t2 = {
