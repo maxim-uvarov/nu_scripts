@@ -45,7 +45,9 @@ def cecho [
     }
 
     if (not $md) {
-        $text = (mdown $text -c $mdcolor)
+        $text = (mdown $text --mdcolor $mdcolor --defcolor $color )
+    } else {
+        $text = $"(ansi $color)($text)(ansi reset)"
     }
 
     if $frame != null {
@@ -59,7 +61,7 @@ def cecho [
 
     let output = ([
         (seq 1 $before | each {|i| "\n"} | str join "")
-        $"(ansi $color)($text)(ansi reset)"
+        $text
         (seq 1 $after | each {|i| "\n"} | str join "")
     ] | str join "")
 
@@ -72,22 +74,24 @@ def cecho [
 
 def mdown [
     text
-    --mdcolor (-c) = default
+    --mdcolor (-c) = green
+    --defcolor (-d) = default
 ] {
 
     let t1 =  {
-        '**': $'(ansi -e {fg: ($mdcolor) attr: b})', 
-        '*': $'(ansi -e {fg: ($mdcolor) attr: i})', 
-        '_': $'(ansi -e {fg: ($mdcolor) attr: u})'
+        '**': $'(ansi reset)(ansi -e {fg: ($mdcolor) attr: b})', 
+        '*': $'(ansi reset)(ansi -e {fg: ($mdcolor) attr: i})', 
+        '_': $'(ansi reset)(ansi -e {fg: ($mdcolor) attr: u})'
     }
 
     let t2 = {
-        '**': $'(ansi reset)', 
-        '*': $'(ansi reset)', 
-        '_': $'(ansi reset)'
+        '**': $'(ansi reset)(ansi -e {fg: ($defcolor)})', 
+        '*': $'(ansi reset)(ansi -e {fg: ($defcolor)})', 
+        '_': $'(ansi reset)(ansi -e {fg: ($defcolor)})'
     }
 
     $text
+    | $"(ansi -e {fg: ($defcolor)})($text)(ansi reset)"
     | split row "\n"
     | each {
         |l| $l 
@@ -99,8 +103,8 @@ def mdown [
             | upsert fin {
                 |i|  $"($t1 | get -i $i.start)($i.a)($t2 | get -i $i.end)"
             }
-            | get fin -i
-            | str join " "
+            | get -i fin 
+            | str join ""
          } | str join " "
     } | str join "\n"
 }
