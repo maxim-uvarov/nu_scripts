@@ -3,6 +3,7 @@ def cecho [
     ...args
     --color (-c): string@'nu-complete colors' = 'default'
     --frame (-f): string
+    --framecolor: string@'nu-complete colors' = 'default'
     --before (-b): int = 0
     --after (-a): int = 1
     --remleadspaces (-r)
@@ -53,9 +54,9 @@ def cecho [
     if $frame != null {
         let width = (term size | get columns)
         $text = ( [
-            (seq 1 $width | each {|i| $frame} | str join "")
+            (seq 1 $width | each {|i| $frame} | str join "" | $"(ansi ($framecolor))($in)(ansi reset)" ) 
             $text 
-            (seq 1 $width | each {|i| $frame} | str join "")
+            (seq 1 $width | each {|i| $frame} | str join "" | $"(ansi ($framecolor))($in)(ansi reset)")
         ] | str join "\n" )
     }
 
