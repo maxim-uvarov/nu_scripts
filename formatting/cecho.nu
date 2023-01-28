@@ -10,7 +10,7 @@ def cecho [
     --indent (-i) = 0
     --width (-w) = 120
     --print (-p)
-    --md (-M)
+    --md (-M) # Disable parsing and rendering of markdown tags
     --mdcolor (-m): string@'nu-complete colors' = 'green'
 ] {
     mut text = if ($args == []) {
