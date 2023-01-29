@@ -3,8 +3,8 @@ def 'hist-save' [
 ] {
 	let name = $"history(date now | date format '%Y%m%d-%H%M%S')"
 
-	open $nu.history-path 
-	| get history.command_line 
+	history
+	| get command 
 	| last $count 
 	| save $"/Users/user/apps-files/github/nushell_playing/($name).nu"
 }
