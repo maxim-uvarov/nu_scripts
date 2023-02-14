@@ -7,8 +7,12 @@ def 'hist-save' [
 	| where session_id == (history session) 
 	| get command
 	| save $"/Users/user/apps-files/github/nushell_playing/($name).nu"
-}
 
+
+	print $"file saved /Users/user/apps-files/github/nushell_playing/($name).nu"
+
+	code $"/Users/user/apps-files/github/nushell_playing/($name).nu"
+}
 
 # def 'hist-save' [
 # 	count: int = 20
