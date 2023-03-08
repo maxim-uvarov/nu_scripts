@@ -24,6 +24,7 @@
       | reverse
       | uniq
     }
+  }
 
 # The part below should be pasted into the 'keybindgs' list of the 'config.nu' file
 
