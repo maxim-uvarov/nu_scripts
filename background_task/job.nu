@@ -8,11 +8,9 @@
 export def spawn [
     command: string
 ] {
-    let config_path = $nu.config-path
-    let env_path = $nu.env-path
-    # let source_code = (view source $command | str trim -l -c '{' | str trim -r -c '}')
-    let source_code = $command
-    let job_id = (pueue add -p $"nu -c \"($source_code)\" --config \"($config_path)\" --env-config \"($env_path)\"")
+    let job_id = (
+        pueue add $"nu -c \"($command)\" --config \"($nu.config-path)\" --env-config \"($nu.env-path)\""
+    )
     {"job_id": $job_id}
 }
 
@@ -25,6 +23,7 @@ export def log [
     | flatten --all
     | flatten --all
     | flatten status
+    | move output --before id
 }
 
 # get job running status
@@ -35,6 +34,7 @@ export def status () {
     | transpose -i status
     | flatten
     | flatten status
+    | explore
 }
 
 # kill specific job
