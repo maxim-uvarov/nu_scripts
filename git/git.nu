@@ -80,6 +80,7 @@ export def glgv [
 }
 
 export def gpp! [] {
+    git pull
     git add --all
     git commit -v -a --no-edit --amend
     git push --force
@@ -111,14 +112,24 @@ export def gm [branch:string@"nu-complete git branches"] {
     git merge $branch
 }
 
-extern "git reset" [
-    sha?:string@"nu-complete git log"
-    --hard:bool
-]
+def git_main_branch [] {
+    git remote show origin | lines | str trim | find 'HEAD branch: ' | first | split words | last
+}
+
+def git_current_branch [] {
+    git rev-parse --abbrev-ref HEAD | str trim -c "\n"
+}
+
+export def gmom [] {
+    let main = (git_main_branch)
+    git merge $"origin/($main)"
+}
 
 export alias gp = git push
 export alias gpf! = git push --force
+export alias gpsup = git push --set-upstream origin (git_current_branch)
 export alias gl = git pull
+export alias glo = git log --oneline
 export alias ga = git add
 export alias gaa = git add --all
 export alias gapa = git add --patch
