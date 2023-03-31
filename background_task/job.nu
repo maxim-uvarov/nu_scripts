@@ -9,9 +9,8 @@ export def spawn [
     command: string
 ] {
     let job_id = (
-        pueue add $"nu -c \"($command)\" --config \"($nu.config-path)\" --env-config \"($nu.env-path)\""
+        pueue add -p $"nu -c \"($command)\" --config \"($nu.config-path)\" --env-config \"($nu.env-path)\""
     )
-    {"job_id": $job_id}
 }
 
 export def log [
@@ -34,7 +33,6 @@ export def status () {
     | transpose -i status
     | flatten
     | flatten status
-    | explore
 }
 
 # kill specific job
