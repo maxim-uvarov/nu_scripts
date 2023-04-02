@@ -94,10 +94,11 @@ def 'py-graph-contract-update' [] {
 }
 
 def 'fill non-exist' [
-    tbl
+    tbl?
     --value = null
 ] {
-    let cols = ($tbl | each {|i| $i | columns} | uniq | reduce --fold {} {|i acc| $acc | merge {$i : $value}})
+    let tbl = ($in | default $tbl)
+    let cols = ($tbl | each {|i| $i | columns} | flatten | uniq | reduce --fold {} {|i acc| $acc | merge {$i : $value}})
     
     $tbl | each {|i| $cols | merge $i}
 }
