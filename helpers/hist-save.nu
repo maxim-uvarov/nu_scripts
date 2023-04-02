@@ -24,7 +24,7 @@ def 'hs' [
 	history -l 
 	| where session_id == (history session) 
 	| get command
-	| filter {|i| ($i =~ "^let ") or ($i =~ "#")}
+	| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def")}
 	| append "\n\n"
 	| prepend $"#($name)"
 	| save $"($dir)/($name).nu" -a
