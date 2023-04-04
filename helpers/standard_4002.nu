@@ -102,3 +102,9 @@ def 'fill non-exist' [
     
     $tbl | each {|i| $cols | merge $i}
 }
+
+def 'gp' [
+    ...rest
+] {
+    /Users/user/miniconda3/envs/openai/bin/python /Users/user/apps-files/github/gpt-cli/gpt.py $rest
+}
