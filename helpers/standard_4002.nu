@@ -49,6 +49,7 @@ def 'backup' [
     filename
     --to: string
 ] {
+    let filename = ($filename | path expand)
     let basename1 = ($filename | path basename)
     let filename1 = ($filename | path parse)
 
@@ -104,7 +105,16 @@ def 'fill non-exist' [
 }
 
 def 'gp' [
-    ...rest
+    ...rest: string@"nu-complete gpt completions"
 ] {
     /Users/user/miniconda3/envs/openai/bin/python /Users/user/apps-files/github/gpt-cli/gpt.py $rest
 }
+
+
+def "nu-complete gpt completions" [] {
+    open ~/.gptrc | from yaml | get assistants | columns
+}
+
+# def-env "reload config" [] {
+#     source '/Users/user/Library/Application Support/nushell/env.nu'; source '/Users/user/Library/Application Support/nushell/config.nu'
+# }
