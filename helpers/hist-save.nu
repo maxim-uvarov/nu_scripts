@@ -18,16 +18,26 @@ def 'hs' [
 	filename?
 	--dir: string = $"/Users/user/apps-files/github/nushell_playing/"
 	--open (-o)
+	--up (-u) = 0
 ] {
 	let name = ($filename | default ($"history(history session)"))
 
-	history -l 
-	| where session_id == (history session) 
-	| get command
-	| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def")}
-	| append "\n\n"
-	| prepend $"#($name)"
-	| save $"($dir)/($name).nu" -a
+	if $up > 1 {
+		history -l 
+		| where session_id == (history session) 
+		| get command
+		| last ($up + 1)
+		| drop 1
+		| save $"($dir)/($name).nu" -a	
+	} else {
+		history -l 
+		| where session_id == (history session) 
+		| get command
+		| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def")}
+		| append "\n\n"
+		| prepend $"#($name)"
+		| save $"($dir)/($name).nu" -a	
+	}
 
 	# print $"file saved ($dir)/($name).nu"
 
