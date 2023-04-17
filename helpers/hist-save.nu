@@ -33,7 +33,7 @@ def 'hs' [
 		history -l 
 		| where session_id == (history session) 
 		| get command
-		| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def")}
+		| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def") or ($i =~ '\bsave\b')}
 		| append "\n\n"
 		| prepend $"#($name)"
 		| save $"($dir)/($name).nu" -a	
