@@ -126,7 +126,7 @@ def history-stats2 [
     print "It is saved in 'frequent-commands-sys-info.yaml'"
     print $sys_info 
 
-    $sys_info | save -f "frequent-commands-sys-info.yaml"
+    $sys_info | to yaml | save -f "frequent-commands-sys-info-yaml.txt" # Github does not allow uploading YAML files to comments.
 
     print ""
     print $"Files '($filename_csv)' and 'frequent-commands-sys-info.yaml' have been written."
