@@ -14,7 +14,7 @@ def history-stats2 [
         hours_in_group
     ] {
         print "You use SQLite as a history storage, so timestamps for your commands are available."
-        print $"To reduce outliers, your commands are grouped by ($hours_in_group) hours."
+        print $"To reduce outliers, your commands are grouped in chucnks by ($hours_in_group) hours."
         print "If some command was used many times per group in final stats it will be counted only once."
         print "You can change the number of hours in a group by setting a parameter '--hours_in_group'."
         print ""
@@ -131,6 +131,7 @@ def history-stats2 [
     print ""
     print $"Files '($filename_csv)' and 'frequent-commands-sys-info.yaml' have been written."
     print "Kindly share them in the thread: "
+    print "https://github.com/nushell/nushell.github.io/issues/899"
 }
 
 history-stats2
