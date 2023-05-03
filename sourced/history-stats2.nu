@@ -129,7 +129,7 @@ def history-stats2 [
     $sys_info | to yaml | save -f "frequent-commands-sys-info-yaml.txt" # Github does not allow uploading YAML files to comments.
 
     print ""
-    print $"Files '($filename_csv)' and 'frequent-commands-sys-info.yaml' have been written."
+    print $"Files '($filename_csv)' and 'frequent-commands-sys-info-yaml.txt' have been written."
     print "Kindly share them in the thread: "
     print "https://github.com/nushell/nushell.github.io/issues/899"
 }
