@@ -1,14 +1,23 @@
 # Frequently used Nu commands
 def history-stats2 [
-    --verbose (-v): bool
     --hours_in_group: int = 4     # When used sql history storage, commands are grouped by number of hours to reduce outliers
+    --summary: int = 15
 ] {
+    print "This script will analyze your history and calculate the Nushell commands that you have used"
+    print "most frequently. Afterward, it will generate two files, one in CSV and the other in YAML format,"
+    print "so you can share them with the community. On an M1 Mac with a history of 25k, this script runs for 6 seconds."
+    print "The duration of the script running on your computer will also be included in the YAML file too."
+    print ""
+    
+    let script_start_time = (date now)
     def hist_from_sql [
         hours_in_group
     ] {
-        print $"You use sqlite as a history storage. So commands in your history are grouped by ($hours_in_group) hours."
-        print "If the command was used many times per group in final stats it will be counted only once."
-        print "You can change the number of hours in a group by setting a parameter `--hours_in_group`."
+        print "You use SQLite as a history storage, so timestamps for your commands are available."
+        print $"To reduce outliers, your commands are grouped by ($hours_in_group) hours."
+        print "If some command was used many times per group in final stats it will be counted only once."
+        print "You can change the number of hours in a group by setting a parameter '--hours_in_group'."
+        print ""
 
         (
             $nu.history-path 
@@ -27,14 +36,16 @@ def history-stats2 [
                 | str join " "
             } 
         )
-}
+    }
 
     def hist_from_txt [] {
         history | get command
     }
 
+    let history_storage = ($nu.history-path | path parse | get extension)
+
     let hist = (
-        if ($nu.history-path | path parse | get extension | $in == sqlite3) {
+        if ($history_storage == sqlite3) {
             (hist_from_sql $hours_in_group)
         } else {
             (hist_from_txt)
@@ -67,25 +78,59 @@ def history-stats2 [
                 | ($i.count_with_subcommands * 2) - $in
             } 
         } | sort-by count -r 
-        | filter {|i| ($i.command_type == 'builtin') or ($i.command_type == 'keyword')}
-        | reject command_type count_with_subcommands
+        | reject count_with_subcommands
         | where count >= 10
     )
 
-    if ($verbose) {
-        let total_cmds = (history | length)
-        let unique_cmds = (history | get command | uniq | length)
+    let total_cmds = (history | length)
+    let unique_cmds = (history | get command | uniq | length)
 
-        print $"(ansi green)Total commands in history:(ansi reset) ($total_cmds)"
-        print $"(ansi green)Unique commands:(ansi reset) ($unique_cmds)"
-        print ""
-        print $"(ansi green)Top ($summary)(ansi reset) most used commands:"
+    print $"(ansi green)Total commands in history:(ansi reset) ($total_cmds)"
+    print $"(ansi green)Unique commands:(ansi reset) ($unique_cmds)"
+    print ""
+    print $"(ansi green)Top ($summary)(ansi reset) most used commands:"
+
+    print ($freq_no_subcommands | first $summary)
+
+    let running_time = ((date now) - $script_start_time)
+
+    let filename_csv = $"frequent-commands-($history_storage).csv"
+
+    print 'What types of commands should be included in the CSV file report?'
+    print '  1. All'
+    print '  2. Built-ins only'
+    let include_all = (input 'enter the digit of the option you selected: ')
+    print ''
+
+    let out = if $include_all == '1' {
+        $freq_no_subcommands 
+    } else {
+        $freq_no_subcommands 
+        | filter {|i| ($i.command_type == 'builtin') or ($i.command_type == 'keyword')} 
     }
 
-    let filename = $"frequent-commands-($nu.history-path | path parse | get extension).csv"
-    $freq_no_subcommands | save -f $filename
+    $out | save -f $filename_csv
 
-    print $"($filename) was written. Please share it in the thread:"
-    echo $freq_no_subcommands
+    let sys_info = (
+        sys 
+        | select host.long_os_version cpu.0.brand mem 
+        | upsert nu_version (nu -v) 
+        | upsert script_duration $running_time
+        | upsert total_commands $total_cmds
+        | upsert unique_commands $unique_cmds
+        | move total_commands unique_commands script_duration --before host_long_os_version
+    )
+
+    print ""
+    print "Here is some technical information to enrich your report."
+    print "It is saved in 'frequent-commands-sys-info.yaml'"
+    print $sys_info 
+
+    $sys_info | save -f "frequent-commands-sys-info.yaml"
+
+    print ""
+    print $"Files '($filename_csv)' and 'frequent-commands-sys-info.yaml' have been written."
+    print "Kindly share them in the thread: "
 }
 
+history-stats2
