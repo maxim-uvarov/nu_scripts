@@ -19,25 +19,33 @@ def 'hs' [
 	--dir: string = $"/Users/user/apps-files/github/nushell_playing/"
 	--open (-o)
 	--up (-u) = 0
+	--all
 ] {
 	let name = ($filename | default ($"history(history session)"))
 
-	if $up > 1 {
+	let hist = (
 		history -l 
 		| where session_id == (history session) 
 		| get command
-		| last ($up + 1)
-		| drop 1
-		| save $"($dir)/($name).nu" -a	
-	} else {
-		history -l 
-		| where session_id == (history session) 
-		| get command
-		| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def") or ($i =~ '\bsave\b')}
-		| append "\n\n"
-		| prepend $"#($name)"
-		| save $"($dir)/($name).nu" -a	
-	}
+	)
+
+	let buffer = (
+		if $up > 1 {
+			$hist
+			| last ($up + 1)
+			| drop 1
+		} else if $all {
+			$hist
+			| drop 1
+		} else {
+		  $hist
+			| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def") or ($i =~ '\bsave\b')}
+			| append "\n\n"
+			| prepend $"#($name)"
+		}
+	)
+
+		$buffer | save $"($dir)/($name).nu" -a	
 
 	# print $"file saved ($dir)/($name).nu"
 
