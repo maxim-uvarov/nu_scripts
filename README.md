@@ -1,6 +1,20 @@
 # Nushell Scripts
 
-This is a place to share Nushell scripts with each other. If you'd like to share your scripts, create a PR that adds it to the repo.
+This is a place to share Nushell scripts with each other. If you'd like to share your scripts, fork this repository, and [create a PR](https://github.com/nushell/nu_scripts/compare) that adds it to the repo.
+
+## Sections
+
+- [aliases](./aliases/)
+- [benchmarks](./benchmarks/)
+- [cool-oneliners](./sourced/cool-oneliners/)
+- [custom-completions](./custom-completions/) - collection of custom completions for external commands.
+- [custom-menus](./custom-menus/) - collection of custom nushell menus
+- [example-config](./example-config/)
+- [hooks](./hooks/)
+- [modules](./modules/) - This has it's dedicated [readme](./modules/README.md)
+- [nu_101](./sourced/nu_101/) - Beginner introduction to nushell concepts.
+- [prompt](./modules/prompt/)
+- [themes](./themes/)
 
 ## Running Scripts
 
