@@ -1,14 +1,25 @@
 #bar_fn
-let blocks = ["▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
-let percent = 0.33
-let width = 10
-# let blocks = [" " "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
 def 'bar' [
-  percent
-  width
+    percentage: float
+    width: int = 5
+    --foreground (-f): string = 'default'
+    --background (-b): string = 'default'
 ] {
-    $"($blocks.7 * ($percent * $width // 1))($blocks | get (($percent * $width) mod 1 | $in * 8 | math floor))" | fill -c $' ' -w $width | $"(ansi -e {fg: yellow, bg: red})($in)(ansi reset)"
-    }
+    let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
+    let $whole_part = (($blocks | last) * ($percentage * $width // 1))
+    let $fraction = (
+        $blocks 
+        | get (
+            ($percentage * $width) mod 1 
+            | $in * ($blocks | length) 
+            | math floor
+        )
+    )
+
+    $"($whole_part)($fraction)" 
+    | fill -c $' ' -w $width 
+    | $"(ansi -e {fg: ($foreground), bg: ($background)})($in)(ansi reset)"
+}
 
 
 
