@@ -3,11 +3,7 @@ def history-stats2 [
     --hours_in_group: int = 4     # When used sql history storage, commands are grouped by number of hours to reduce outliers
     --summary: int = 15
 ] {
-    print "This script will analyze your history and calculate the Nushell commands that you have used"
-    print "most frequently. Afterward, it will generate two files, one in CSV and the other in YAML format,"
-    print "so you can share them with the community. On an M1 Mac with a history of 25k, this script runs for 6 seconds."
-    print "The duration of the script running on your computer will also be included in the YAML file too."
-    print ""
+    print "This script calculate will calculate your most frequent Nushell commands"
     
     let script_start_time = (date now)
     def hist_from_sql [
@@ -58,7 +54,7 @@ def history-stats2 [
         | par-each {
             |i| $i 
             | upsert count_with_subcommands {
-                |i| $hist 
+                |b| $hist 
                 | find -r $'\b($i.name)\b' 
                 | length
             }
@@ -114,12 +110,12 @@ def history-stats2 [
         | filter {|i| ($i.command_type == 'builtin') or ($i.command_type == 'keyword')} 
     }
 
-    $out | save -f $filename
+    $out | save -f $"($filename).csv"
 
     let sys_info = (
         sys 
         | select host.long_os_version cpu.0.brand mem 
-        | upsert sto rage $history_storage
+        | upsert storage $history_storage
         | upsert nu_version (nu -v) 
         | upsert script_duration $running_time
         | upsert total_commands $total_cmds
