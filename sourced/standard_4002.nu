@@ -1,3 +1,9 @@
+# create directory and cd into it.
+def-env md [dir] {
+  let dir = ($dir | path expand | into string)
+  mkdir $dir
+  cd $dir
+}
 
 def is-cid [particle: string] {
     ($particle =~ '^Qm\w{44}$') 
@@ -118,3 +124,7 @@ def "nu-complete gpt completions" [] {
 # def-env "reload config" [] {
 #     source '/Users/user/Library/Application Support/nushell/env.nu'; source '/Users/user/Library/Application Support/nushell/config.nu'
 # }
+
+def 'nu config git log' [] {
+    (cd '/Users/user/Library/Application Support/nushell'; git commit -m $"(date now)" -a)
+}
