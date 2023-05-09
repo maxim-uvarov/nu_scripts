@@ -128,3 +128,35 @@ def "nu-complete gpt completions" [] {
 def 'nu config git log' [] {
     (cd '/Users/user/Library/Application Support/nushell'; git commit -m $"(date now)" -a)
 }
+
+def 'repeat' [
+    from_command?: string@'nu-complete-history-commands'
+    to_command?: string@'nu-complete-history-commands'
+] {
+    let $hist = (history | get command | last 50 | drop 1)
+    let $from_command = (
+        try {
+            $hist
+            | reverse 
+            | get (
+                $from_command 
+                | into int 
+                | $in
+            )
+        } catch {$from_command}
+    )
+    let $hist = ($hist | reverse | take until {|i| $i == $from_command} | reverse)
+    let $hist = (
+        if $to_command == null {
+            $hist 
+        } else {
+            $hist | skip while {|i| $i == $to_command}
+        }
+    )
+
+    commandline ($hist | str join '; ')
+}
+
+def "nu-complete-history-commands" [] {
+    history | last 50 | drop 1 | get command | reverse | each {|i| $"`($i)`"}
+}
