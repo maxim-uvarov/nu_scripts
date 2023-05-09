@@ -127,7 +127,7 @@ def "nu-complete gpt completions" [] {
 
 def 'mygit log' [
     folder?: string@'nu-complete-my-folders-for-git'
-    message?: string
+    --message (-m): string
 ] {
     let message = ($message | if-empty (date now))
     cd $folder; 
