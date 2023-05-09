@@ -167,7 +167,7 @@ def 'repeat' [
         }
     )
 
-    commandline ($hist | str join '; ')
+    commandline ($hist | str join '; ' | $in + " #repeat_fn ")
 }
 
 def "nu-complete-history-commands" [] {
