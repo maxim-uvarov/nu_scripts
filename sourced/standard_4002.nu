@@ -129,7 +129,7 @@ def 'mygit log' [
     folder?: string@'nu-complete-my-folders-for-git'
     --message (-m): string
 ] {
-    let message = ($message | if-empty (date now))
+    let $message = ($message | if-empty (date now | date format "%Y-%m-%d"))
     cd $folder; 
     git commit -a -m $message 
 }
