@@ -125,9 +125,22 @@ def "nu-complete gpt completions" [] {
 #     source '/Users/user/Library/Application Support/nushell/env.nu'; source '/Users/user/Library/Application Support/nushell/config.nu'
 # }
 
-def 'nu config git log' [] {
-    (cd '/Users/user/Library/Application Support/nushell'; git commit -m $"(date now)" -a)
+def 'mygit log' [
+    folder?: string@'nu-complete-my-folders-for-git'
+    message?: string
+] {
+    let message = ($message | if-empty (date now))
+    cd $folder; 
+    git commit -a -m $message 
 }
+
+def "nu-complete-my-folders-for-git" [] {
+    [
+        '~/Library/Application Support/nushell'
+        '~/apps-files/github/nu_scripts/'
+        '~/.config/'
+    ] | each {|i| $"'($i)'"}
+} 
 
 def 'repeat' [
     from_command?: string@'nu-complete-history-commands'
