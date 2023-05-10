@@ -28,19 +28,6 @@ def make_default_folders_fn [] {
     mkdir $"($env.cyfolder)/cache/cli_out/"
 }
 
-def 'if-empty' [
-    value? 
-    --alternative (-a): any
-] {
-     (
-         if ($value | is-empty) {
-             $alternative
-         } else {
-             $value
-         }
-     )
- }
-
 def 'now' [
     --pretty (-P)
 ] {
@@ -129,7 +116,7 @@ def 'mygit log' [
     folder?: string@'nu-complete-my-folders-for-git'
     --message (-m): string
 ] {
-    let $message = ($message | if-empty (date now | date format "%Y-%m-%d"))
+    let $message = ($message | default (date now | date format "%Y-%m-%d"))
     cd $folder; 
     git commit -a -m $message 
 }
@@ -172,4 +159,46 @@ def 'repeat' [
 
 def "nu-complete-history-commands" [] {
     history | last 50 | drop 1 | get command | reverse | each {|i| $"`($i)`"}
+}
+
+def whatnow [] {
+    let in_type = ($in | describe)
+
+    let matched_types = (if $in_type =~ "list<.*>" {
+        let list_value_type = ($in_type | parse -r "list<(?P<inner_type>.+)>" | get inner_type | get 0)
+        ['list<any>', $in_type, $list_value_type]
+    } else if $in_type =~ "record<.*>" {
+        ["record"]
+    } else if $in_type =~ "table<.*>" {
+        ["table"]
+    } else {
+        [$in_type]
+    } | uniq)
+
+    let commands = (
+        $nu.scope.commands 
+        | select name signatures usage
+        | update signatures { |item| $item.signatures | transpose | get column1 }
+        | rename name signature usage
+        | flatten
+    )
+
+    let matching_commands = (
+        $commands
+        # TODO: This assumes that input is at position 0, but using a nested where here is extremely
+        # slow for some reason, even though we're only iterating over ~500 records.
+        | where { |command| ($command.signature.0.syntax_shape) in $matched_types }
+    )
+
+    let commands_with_simplified_signatures = ($matching_commands | par-each { |command| 
+       let input = ($command.signature | where parameter_type == input | get 0)
+       let output = ($command.signature | where parameter_type == output | get 0)
+       let positionals = ($command.signature | where parameter_type == positional)
+
+       let positional_string = ($positionals.syntax_shape | each {|shape| $" <($shape)>"} | str join)
+
+       {name: $command.name, signature: $"<($input.syntax_shape)> | ($command.name) ($positional_string) -> ($output.syntax_shape)", usage: $command.usage}
+    })
+
+    $commands_with_simplified_signatures | sort-by signature name
 }
