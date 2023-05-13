@@ -1,7 +1,8 @@
 def 'hist-save' [
 	# count: int = 20
-	--dir: string = $"/Users/user/apps-files/github/nushell_playing/"
+	--dir: string
 ] {
+	let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
 	let name = $"history(date now | date format '%Y%m%d-%H%M%S')"
 
 	history -l 
@@ -16,11 +17,12 @@ def 'hist-save' [
 
 def 'hs' [
 	filename?
-	--dir: string = $"/Users/user/apps-files/github/nushell_playing/"
+	--dir: string
 	--open (-o)
 	--up (-u) = 0
 	--all
 ] {
+	let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
 	let name = ($filename | default ($"history(history session)"))
 
 	let hist = (
@@ -56,9 +58,10 @@ def 'hs' [
 
 def 'hs-line' [
 	# count: int = 20
-	--dir: string = $"/Users/user/apps-files/github/nushell_playing/"
+	--dir: string
 	--open (-o)
 ] {
+	let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
 	let name = $"history(history session).nu"
 
 	history -l 

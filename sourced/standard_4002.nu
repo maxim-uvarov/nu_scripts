@@ -145,7 +145,7 @@ def 'repeat' [
             )
         } catch {$from_command}
     )
-    let $hist = ($hist | reverse | take until {|i| $i == $from_command} | reverse)
+    let $hist = ($hist | reverse | take until {|i| $i == $from_command} | append $from_command | reverse)
     let $hist = (
         if $to_command == null {
             $hist 
@@ -161,6 +161,7 @@ def "nu-complete-history-commands" [] {
     history | last 50 | drop 1 | get command | reverse | each {|i| $"`($i)`"}
 }
 
+# https://gist.github.com/TrMen/d5bc8dc41644c7e3d9ba4a9611d3c38b
 def whatnow [] {
     let in_type = ($in | describe)
 
@@ -202,3 +203,62 @@ def whatnow [] {
 
     $commands_with_simplified_signatures | sort-by signature name
 }
+
+# # https://discord.com/channels/601130461678272522/1098446929555374101/1098718686661058682
+# def _try_flag [command: string, flag: string] {
+#     try {
+#         let exit = (^$command $flag | complete | get exit_code)
+#         if $exit != 0 {
+#             false
+#         }
+#         true
+#     } catch {
+#         false
+#     }
+# }
+
+# def _try_builtin [command: string] {
+#     try {
+#         help $command
+#         return true
+#     } catch {
+#         return false
+#     }
+# }
+
+# let flags = ["--help" "-h"]
+# let flags_length = ($flags | length)
+# let fall_back = "tldr"
+
+# def _help [command: string = "help"] {
+#     if ($command == "help") {
+#         return (help)
+#     }
+
+#     let builtin = if not ($command | str starts-with "^") {
+#         _try_builtin $command
+#     } else {
+#         false
+#     }
+#     if not $builtin {
+#         mut command = $command
+#         if ($command | str starts-with "^") {
+#             $command = ($command | str substring 1..)
+#         }
+#         mut index = 0
+#         while $index < $flags_length {
+#             if (_try_flag $command ($flags | get $index)) {
+#                 break
+#             }
+#             $index = $index + 1
+#         }
+#         if $index == $flags_length {
+#             ^$fall_back $command
+#         } else {
+#             ^$command ($flags | get $index)
+#         }
+#     } else {
+#         help $command
+#     }
+# }
+# alias help = _help
