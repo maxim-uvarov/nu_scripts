@@ -23,11 +23,19 @@ def 'hs' [
 	--all
 ] {
 	let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
-	let name = ($filename | default ($"history(history session)"))
 
-	let hist = (
+	let hist_raw = (
 		history -l 
-		| where session_id == (history session) 
+		| last 200
+	)
+
+	let $session = ($hist_raw | last | get session_id )
+
+	let name = ($filename | default ($"history($session)"))
+
+	let $hist = (
+		| $hist_raw
+		| where session_id == ($session) 
 		| get command
 	)
 
