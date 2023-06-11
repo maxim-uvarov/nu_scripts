@@ -262,3 +262,19 @@ def whatnow [] {
 #     }
 # }
 # alias help = _help
+
+def 'to vd' [] {
+    let $obj = $in
+
+    $obj
+    | describe
+    | if $in == 'dataframe' {
+      $obj | dfr into-df | dfr into-nu 
+    } else { $obj } 
+    | try { 
+        to csv | vd --filetype csv 
+    } catch {
+        to json | vd --filetype json 
+    } | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
+}
+
