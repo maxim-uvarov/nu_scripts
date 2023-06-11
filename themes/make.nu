@@ -1,11 +1,13 @@
 #!/usr/bin/env nu
 
+let current_dir = ($env.CURRENT_FILE | path dirname)
+
 let SOURCE = {
-    dir: ([lemnos themes] | path join)
-    local: "lemnos"
+    dir: ($current_dir | path join "lemnos" "themes")
+    local: ($current_dir | path join "lemnos")
     remote: "https://github.com/lemnos/theme.sh"
 }
-let THEMES = "themes"
+let THEMES = ($current_dir | path join "themes")
 
 def make-theme [name: string] {
     let colors = (
@@ -26,29 +28,29 @@ def make-theme [name: string] {
     bool: {|| if $in { "($colors.color14)" } else { "light_gray" } }
     int: "($colors.color7)"
     filesize: {|e|
-      if $e == 0b {
-        "($colors.color7)"
-      } else if $e < 1mb {
-        "($colors.color6)"
-      } else {{ fg: "($colors.color4)" }}
+        if $e == 0b {
+            "($colors.color7)"
+        } else if $e < 1mb {
+            "($colors.color6)"
+        } else {{ fg: "($colors.color4)" }}
     }
     duration: "($colors.color7)"
     date: {|| (char lparen)date now(char rparen) - $in |
-      if $in < 1hr {
-        { fg: "($colors.color1)" attr: "b" }
-      } else if $in < 6hr {
-        "($colors.color1)"
-      } else if $in < 1day {
-        "($colors.color3)"
-      } else if $in < 3day {
-        "($colors.color2)"
-      } else if $in < 1wk {
-        { fg: "($colors.color2)" attr: "b" }
-      } else if $in < 6wk {
-        "($colors.color6)"
-      } else if $in < 52wk {
-        "($colors.color4)"
-      } else { "dark_gray" }
+        if $in < 1hr {
+            { fg: "($colors.color1)" attr: "b" }
+        } else if $in < 6hr {
+            "($colors.color1)"
+        } else if $in < 1day {
+            "($colors.color3)"
+        } else if $in < 3day {
+            "($colors.color2)"
+        } else if $in < 1wk {
+            { fg: "($colors.color2)" attr: "b" }
+        } else if $in < 6wk {
+            "($colors.color6)"
+        } else if $in < 52wk {
+            "($colors.color4)"
+        } else { "dark_gray" }
     }
     range: "($colors.color7)"
     float: "($colors.color7)"
@@ -61,6 +63,7 @@ def make-theme [name: string] {
     list: "($colors.color7)"
     block: "($colors.color7)"
     hints: "dark_gray"
+    search_result: { fg: "($colors.color1)" bg: "($colors.color7)" }
 
     shape_and: { fg: "($colors.color5)" attr: "b" }
     shape_binary: { fg: "($colors.color5)" attr: "b" }
