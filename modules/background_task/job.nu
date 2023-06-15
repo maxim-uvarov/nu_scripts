@@ -26,7 +26,33 @@ export def log [
 }
 
 # get job running status
-export def status () {
+export def status [
+    --last = 0
+] {
+    pueue status -j 
+    | from json 
+    | get tasks 
+    | values 
+    | reject envs enqueued_at original_command 
+}
+
+export def 'parse' [
+] {
+    $in 
+    | par-each {|i| $i 
+        | upsert created_at {|b| $b.created_at | into datetime} 
+        | upsert start {|b| if $b.start != null {$b.start | into datetime}} 
+        | upsert end {|b| if $b.end != null {$b.end | into datetime}} 
+        | upsert duration {|b| if $b.end != $nothing {$b.end - $b.start}} 
+        | upsert command {|b| $b.command | split row " --config \"" | get 0}
+    } 
+    | reject end 
+    | move start duration --before command 
+    | sort-by id
+}
+
+# get job running status
+export def status_old () {
     pueue status --json
     | from json
     | get tasks
