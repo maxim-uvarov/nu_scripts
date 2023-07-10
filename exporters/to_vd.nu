@@ -7,21 +7,26 @@
 def-env 'to vd' [] {
     let $obj = $in
 
-    def is_flat [
-        data_type_description: string
-    ] {
+    # > [{a: b, c: d}] | describe | is_flat
+    # true
+    # > [{a: {c: d}, b: e}] | describe | is_flat
+    # false
+    def is_flat [] {
+        let $type_description = $in
         (
-            ($data_type_description | str starts-with 'table') and
-            ($data_type_description | find -r ': (table|record|list)' | is-empty)
+            ($type_description | str starts-with 'table') and
+            ($type_description | find -r ': (table|record|list)' | is-empty)
         )
     }
 
-    let $data_type_description = ($obj | describe)
+    let $type_description = ($obj | describe)
     
-    if $data_type_description == 'dataframe' {
+    if $type_description == 'dataframe' {
         $obj | dfr into-df | dfr into-nu 
-    } else { $obj } 
-    | if (is_flat $data_type_description) {
+    } else { 
+        $obj 
+    } 
+    | if ($type_description | is_flat) {
         to csv | vd --filetype csv
     } else {
         to json | vd --filetype json 
