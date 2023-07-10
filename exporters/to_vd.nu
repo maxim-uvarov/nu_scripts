@@ -27,7 +27,7 @@ def-env 'to vd' [] {
         | if ($in | is_flat) {
             to csv | vd --filetype csv
         } else {
-            to json | vd --filetype json 
+            to json -r | vd --filetype json 
         }
         | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
         | if ($in != null) {
