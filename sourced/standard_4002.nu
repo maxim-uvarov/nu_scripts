@@ -266,16 +266,22 @@ def whatnow [] {
 def 'to vd' [] {
     let $obj = $in
 
-    $obj
-    | describe
+    let desc = ($obj | describe)
+
+    $desc
     | if $in == 'dataframe' {
       $obj | dfr into-df | dfr into-nu 
     } else { $obj } 
-    | try { 
-        to csv | vd --filetype csv 
-    } catch {
+    | if (
+        ($desc | str starts-with 'table') and
+        ($desc | find -r ': (table|record|list)' | is-empty)
+    ) {
+        to csv | vd --filetype csv
+    } else {
         to json | vd --filetype json 
-    } | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
+    }
+    | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
+    | do {|i| $i | save -f vd_out_temp.csv; $i} $in
 }
 
 export def commit_type [] {
