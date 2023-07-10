@@ -7,7 +7,7 @@ def call-gitlab [
   ...args: string
   --query: string
 ] {
-  fetch -H [Authorization $"Bearer ($env.GITLAB_TOKEN)"] $"($projects)($args|str join)?($query)"
+  http get -H [Authorization $"Bearer ($env.GITLAB_TOKEN)"] $"($projects)($args|str join)?($query)"
 }
 # Search files on your GitLab server
 def main [
@@ -27,7 +27,7 @@ def main [
     if ($payload|columns|find message|is-empty) {
       $payload
       |get content
-      |hash base64 --decode
+      |decode base64
       |lines
       |find $phrase
       |if ($in|length) > 0 {

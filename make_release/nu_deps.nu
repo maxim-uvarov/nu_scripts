@@ -31,7 +31,7 @@ def find-deps [] {
 
     ls crates/nu-*/Cargo.toml | get name | each {|toml|
         let crate = ($toml | path dirname | path basename)
-        let data = open $toml
+        let data = (open $toml)
 
         if not (($crate in $second_wave) or ($crate in $third_wave)) {
             mut deps = []
@@ -55,7 +55,7 @@ def find-deps [] {
 # Returns a list which you can process further, e.g.:
 # > nu_deps | str join (',' + (char nl))
 export def main [] {
-    let deps = find-deps
+    let deps = (find-deps)
 
     mut list = []
 
