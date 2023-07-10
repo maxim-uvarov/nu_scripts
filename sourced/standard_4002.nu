@@ -17,17 +17,6 @@ def is-connected []  {
     (do -i {http get https://duckduckgo.com/} | describe) == 'raw input'
 }
 
-def make_default_folders_fn [] {
-    mkdir $"($env.cyfolder)/temp/"
-    mkdir $"($env.cyfolder)/backups/"
-    mkdir $"($env.cyfolder)/config/"
-    mkdir $"($env.cyfolder)/cache/"
-    mkdir $"($env.cyfolder)/cache/search/"
-    mkdir $"($env.cy.ipfs-files-folder)/"
-    mkdir $"($env.cyfolder)/cache/queue/"
-    mkdir $"($env.cyfolder)/cache/cli_out/"
-}
-
 def 'now' [
     --pretty (-P)
 ] {
