@@ -263,25 +263,36 @@ def whatnow [] {
 # }
 # alias help = _help
 
-def 'to vd' [] {
+# Pipe input data to VisiData in CSV or JSON format. 
+# The suitable format is detected automatically. 
+# If VisiData produces STDOUT, it will be assigned to $env.vd_temp.
+def-env 'to vd' [] {
     let $obj = $in
 
-    let desc = ($obj | describe)
+    def is_flat [
+        data_type_description: string
+    ] {
+        (
+            ($data_type_description | str starts-with 'table') and
+            ($data_type_description | find -r ': (table|record|list)' | is-empty)
+        )
+    }
 
-    $desc
-    | if $in == 'dataframe' {
-      $obj | dfr into-df | dfr into-nu 
+    let $data_type_description = ($obj | describe)
+    
+    if $data_type_description == 'dataframe' {
+        $obj | dfr into-df | dfr into-nu 
     } else { $obj } 
-    | if (
-        ($desc | str starts-with 'table') and
-        ($desc | find -r ': (table|record|list)' | is-empty)
-    ) {
+    | if (is_flat $data_type_description) {
         to csv | vd --filetype csv
     } else {
         to json | vd --filetype json 
     }
     | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
-    | do {|i| $i | save -f vd_out_temp.csv; $i} $in
+    | if ($in != null) {
+        $env.vd_temp = $in;
+        $in
+    }
 }
 
 export def commit_type [] {
