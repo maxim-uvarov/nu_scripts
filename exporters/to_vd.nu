@@ -12,28 +12,27 @@ def-env 'to vd' [] {
     # > [{a: {c: d}, b: e}] | describe | is_flat
     # false
     def is_flat [] {
-        let $type_description = $in
+        let $type_description = ($in | describe)
         (
             ($type_description | str starts-with 'table') and
             ($type_description | find -r ': (table|record|list)' | is-empty)
         )
     }
 
-    let $type_description = ($obj | describe)
-    
-    if $type_description == 'dataframe' {
-        $obj | dfr into-df | dfr into-nu 
-    } else { 
+    (
         $obj 
-    } 
-    | if ($type_description | is_flat) {
-        to csv | vd --filetype csv
-    } else {
-        to json | vd --filetype json 
-    }
-    | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
-    | if ($in != null) {
-        $env.vd_temp = $in;
-        $in
-    }
+        | if ($obj | describe | $in == 'dataframe') {
+            dfr into-df | dfr into-nu 
+        } else { } 
+        | if ($in | is_flat) {
+            to csv | vd --filetype csv
+        } else {
+            to json | vd --filetype json 
+        }
+        | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
+        | if ($in != null) {
+            $env.vd_temp = $in;
+            $in
+        }
+    )
 }
