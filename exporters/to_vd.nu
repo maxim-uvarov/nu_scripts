@@ -12,11 +12,10 @@ def-env 'to vd' [] {
     # > [{a: {c: d}, b: e}] | describe | is_flat
     # false
     def is_flat [] {
-        let $type_description = ($in | describe)
-        (
-            ($type_description | str starts-with 'table') and
-            ($type_description | find -r ': (table|record|list)' | is-empty)
-        )
+        $in 
+        | describe 
+        | find -r '^table.*: (table|record|list)' 
+        | is-empty
     }
 
     (
