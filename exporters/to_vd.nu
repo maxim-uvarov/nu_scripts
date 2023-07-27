@@ -26,9 +26,9 @@ def-env 'to vd' [
 
     (
         $obj 
-        | if ($obj | describe | $in == 'dataframe') {
-            dfr into-df | dfr into-nu 
-        } else { } 
+        # | if ($obj | describe | $in == 'dataframe') {
+        #     dfr into-df | dfr into-nu 
+        # } else { } 
         | if ($csv) or (($in | is_flat) and (not $json)) {
             to csv
             | if $ansi_strip {
