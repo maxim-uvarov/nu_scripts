@@ -44,8 +44,26 @@ def-env 'to vd' [
         }
         | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
         | if ($in != null) {
-            $env.vd_temp = $in;
-            $in
+            let $value = $in
+            let $vd_temp_index = (
+                $env.vd_temp?
+                | default {}
+                | columns
+                | length
+            )
+
+            $env.vd_temp = (
+                if $vd_temp_index == 0 {
+                    {'a1': $value}
+                } else {
+                    $env.vd_temp 
+                    | upsert $'a($vd_temp_index + 1)' { # record keys integer are problematic, so we use a prefix
+                        $value
+                    }
+                }
+            )
+
+            $value
         }
     )
 }
