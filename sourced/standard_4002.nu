@@ -45,7 +45,7 @@ def 'backup' [
         $filename
         | path exists 
     ) {
-        cp $filename $"($to_folder)/($filename1.stem)(now).($filename1.extension)" -v
+        cp $filename $"($to_folder)/($filename1.stem)(now).($filename1.extension)" -v -r
         # print $"Previous version of ($filename) is backed up to ($path2)"
     } else {
         print $"($filename) does not exist"
