@@ -160,7 +160,7 @@ export def gb [
         if $branch in $bs and (agree 'branch will be delete!') {
                 git branch -D $branch
         }
-        if $branch in (remote_braches | each {|x| $x.1}) and (agree -n 'delete remote branch?!') {
+        if $branch in (remote_braches | each {|x| $x.1}) and (agree 'delete remote branch?!') {
             let remote = if ($remote|is-empty) { 'origin' } else { $remote }
             git branch -D -r $'($remote)/($branch)'
             git push $remote -d $branch
@@ -182,8 +182,12 @@ export def-env gn [
     --init (-i):      bool     # git init
 ] {
      if $init {
-        git init $repo
-        cd $repo
+        if ($repo | is-empty) {
+            git init --initial-branch main
+        } else {
+            git init $repo --initial-branch main
+            cd $repo
+        }
         if $submodule {
             git submodule init
         }

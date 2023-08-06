@@ -408,7 +408,7 @@ def git_right_prompt [gs os] {
         (char -u e0b2)     # 
         (ansi { fg: $TERM_FG bg: $TIME_BG})
         (char space)
-        (date now | date format '%m/%d/%Y %I:%M:%S%.3f')
+        (date now | format date '%m/%d/%Y %I:%M:%S%.3f')
         (char space)
         ($R)
     ] | str join)
@@ -418,7 +418,7 @@ def git_right_prompt [gs os] {
         (char -u e0b2)     # 
         (ansi { fg: $TERM_FG bg: $TIME_BG})
         (char space)
-        (date now | date format '%I:%M:%S %p')
+        (date now | format date '%I:%M:%S %p')
         (char space)
         ($R)
     ] | str join)
@@ -462,9 +462,9 @@ def git_right_prompt [gs os] {
     let status_segment = (
         [
             (if $env.LAST_EXIT_CODE != 0 {
-                (ansi { fg: "#CC0000" bg: "#191323"})
+                (ansi { fg: "#CC0000" })
             } else {
-                (ansi { fg: "#606060" bg: "#191323"})
+                (ansi { fg: "#606060" })
             })
             (char -u e0b3)
             (char space)

@@ -10,9 +10,9 @@
 > `nu-ansi-term` is typically released only when there are changes to publish.
 > `reedline` is typically released on the same schedule as Nushell.
 
-> **Note**
+> **Note**  
 > in the following, `dep` denotes either the `reedline` or the `nu-ansi-term` remote
-> e.g. *https://github.com/nushell/reedline* or *git@github.com:nushell/nu-ansi-term*,
+> e.g. `https://github.com/nushell/reedline` or `git@github.com:nushell/nu-ansi-term`,
 > depending on the dependency being installed
 
 - [ ] bump the version (example with [`reedline`][reedline bump example] and [`nu-ansi-term`][nu-ansi-term bump example])
@@ -24,24 +24,24 @@
 - [ ] bump the version on the Nushell side ([example with `reedline`][reedline pin example]) (reference the release notes for courtesy)
 
 ## 1. Minor bump of the version ([example][nushell bump example])
-- [ ] bump the version with `sd 'version = "0.xx.1"' 'version = "0.xx+1.0"' **/Cargo.toml`
-- [ ] commit `Cargo.lock`
+- [ ] in the repo of Nushell, run `/path/to/nu_scripts/make_release/bump-version.nu`
+- [ ] Also commit `Cargo.lock` AFTER running a Cargo command like `cargo check --workspace`
 
 ## 2. Tag the [`nushell`] repo
 > **Warning**  
 > this is maybe the most critical step of the whole release process!!
 > this step, once pushed to *GitHub* will trigger the release workflows.
 
-> **Note**
+> **Note**  
 > in the following, `nushell` will be used to pull and push to the [`nushell`] repo,
-> e.g. the `nushell` remote would be *https://github.com/nushell/nushell* or *git@github.com:nushell/nushell*
+> e.g. the `nushell` remote would be `https://github.com/nushell/nushell` or `git@github.com:nushell/nushell`
 
 - [ ] get the latest version bump commit with `git pull nushell main`
 - [ ] run `cargo build` to check if it's ok and check last features
 - [ ] tag the project with `git tag 0.xx.0`
 - [ ] :warning: push the release tag to *GitHub* `git push nushell main --tags` :warning:
 
-:point_right: check the [CI jobs](https://github.com/nushell/nushell/actions)
+:point_right: check the [CI jobs](https://github.com/nushell/nushell/actions)  
 :point_right: check that there is the same number of targets compared to [last release](https://github.com/nushell/nushell/releases/latest)
 
 ## 3. Publish `nu` to *crates.io*
@@ -82,10 +82,13 @@
 - [ ] tweet about the new release
 
 ## 7. Create the next release note PR on the website
-- [ ] run `./make_release/release-note/create-pr 0.xx.0 ((date now) + 4wk | date format "%Y-%m-%d" | into datetime)`
+- [ ] run `./make_release/release-note/create-pr 0.xx.0 ((date now) + 4wk | format date "%Y-%m-%d" | into datetime)`
 
 ## 8. Bump the version as development
-- [ ] bump the patch version on [`nushell`] ([example][nushell dev example])
+- [ ] bump the patch version on [`nushell`] ([example][nushell dev example]) by running
+```nushell
+/path/to/nu_scripts/make_release/bump-version.nu --patch
+```
 
 
 [reedline bump example]: https://github.com/nushell/reedline/pull/596/files
