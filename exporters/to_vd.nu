@@ -18,7 +18,7 @@ def-env 'to vd' [
     # false
     def is_flat [] {
         $in 
-        | first $lines_for_detection
+        # | first $lines_for_detection
         | describe 
         | find -r '^table(?!.*: (table|record|list))'
         | is-empty
@@ -51,6 +51,7 @@ def-env 'to vd' [
     $obj 
     | if ($obj | describe | $in == 'dataframe') {
         dfr into-nu 
+        | reject index
     } else { } 
     | if ($csv) or (($in | is_flat) and (not $json)) {
         to csv
