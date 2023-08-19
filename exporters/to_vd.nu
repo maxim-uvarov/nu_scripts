@@ -8,7 +8,6 @@ def-env 'to vd' [
     --dont_strip_ansi_codes (-S) # ansi codes are stripped by default. This option disables them.
     --json (-j)     # force to use json
     --csv (-c)      # force to use csv 
-    --lines_for_detection = 100     # number of lines from the head to define the output format
 ] {
     let $obj = $in
 
@@ -40,11 +39,10 @@ def-env 'to vd' [
                 {'a1': $value}
             } else {
                 $env.vd_temp 
-                # record keys integer are problematic, so we use a prefix
+                # integers in record keys are problematic, so we use 'a' prefix
                 | upsert $'a($vd_temp_index + 1)' ( $value )
             }
         )
-
         $value
     }
 
