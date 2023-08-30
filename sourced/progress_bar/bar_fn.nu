@@ -13,17 +13,17 @@ def 'bar' [
     let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
     let $whole_part = (($blocks | last) * ($percentage * $width // 1))
     let $fraction = (
-        $blocks 
+        $blocks
         | get (
-            ($percentage * $width) mod 1 
-            | $in * ($blocks | length) 
+            ($percentage * $width) mod 1
+            | $in * ($blocks | length | $in - 1)
             | math round
         )
     )
 
     let result = (
-        $"($whole_part)($fraction)" 
-        | fill -c $' ' -w $width 
+        $"($whole_part)($fraction)"
+        | fill -c $' ' -w $width
         | $"(ansi -e {fg: ($foreground), bg: ($background)})($in)(ansi reset)"
     )
 
