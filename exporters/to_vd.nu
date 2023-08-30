@@ -1,11 +1,11 @@
-# Pipe input data to VisiData in CSV or JSON format. 
+#   
 # The suitable format is detected automatically. 
 # If VisiData produces STDOUT, it will be assigned to $env.vd_temp.n
 #
 # Examples:
 # > history | to vd
 def-env 'to vd' [
-    --dont_strip_ansi_codes (-S) # ansi codes are stripped by default. This option disables them.
+    --dont_strip_ansi_codes (-S) # ansi codes are stripped by default, this option disables stripping ansi codes.
     --json (-j)     # force to use json
     --csv (-c)      # force to use csv 
 ] {
@@ -17,7 +17,6 @@ def-env 'to vd' [
     # false
     def is_flat [] {
         $in 
-        # | first $lines_for_detection
         | describe 
         | find -r '^table(?!.*: (table|record|list))'
         | is-empty
