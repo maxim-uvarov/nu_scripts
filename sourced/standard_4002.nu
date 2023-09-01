@@ -21,9 +21,9 @@ def 'now' [
     --pretty (-P)
 ] {
     if $pretty {
-        date now | date format '%Y-%m-%d-%H:%M:%S'
+        date now | format date '%Y-%m-%d-%H:%M:%S'
     } else {
-        date now | date format '%Y%m%d-%H%M%S'
+        date now | format date '%Y%m%d-%H%M%S'
     }
 }
 
@@ -105,7 +105,7 @@ def 'mygit log' [
     folder?: string@'nu-complete-my-folders-for-git'
     --message (-m): string
 ] {
-    let $message = ($message | default (date now | date format "%Y-%m-%d"))
+    let $message = ($message | default (date now | format date "%Y-%m-%d"))
     cd $folder; 
     git commit -a -m $message 
 }
