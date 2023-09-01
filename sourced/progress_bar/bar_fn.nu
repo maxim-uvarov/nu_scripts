@@ -36,26 +36,12 @@ def 'bar' [
     }
 }
 
-def assert_eq [num: int, expected: string, input_1: float, input_2?] {
-    let actual = (if ($input_2 == null) {bar $input_1} else {
-        bar $input_1 --width $input_2
-    })
-    let span = (metadata $expected).span;
-    if $actual != $expected {
-      error make {
-        msg: "Actual != Expected",
-        label: {
-            text: $"expected ($expected) but got ($actual)", start: $span.start, end: $span.end
-        }
-      }
-    } else {
-        print $"Test ($num) (ansi green)passed(ansi reset) ✓"
-    }
-}
+use std assert equal
 
+#[test]
 def bar_tests [] {
-    assert_eq 1 "█▌   " 0.3
-    assert_eq 2 "███       " 0.3 10
-    assert_eq 3 "▊" 0.71 1
-    assert_eq 4 "███████▏  " 0.71 10
+    equal "█▌   " (bar 0.3)
+    equal "███       " (bar 0.3 --width 10)
+    equal "▊" (bar 0.71 --width 1)
+    equal "███████▏  " (bar 0.71 --width 10)
 }
