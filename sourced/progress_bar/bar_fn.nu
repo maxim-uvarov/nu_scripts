@@ -24,7 +24,9 @@ def 'bar' [
     let result = (
         $"($whole_part)($fraction)"
         | fill -c $' ' -w $width
-        | $"(ansi -e {fg: ($foreground), bg: ($background)})($in)(ansi reset)"
+        | if ($foreground == 'default') and ($background == 'default') {} else {
+            $"(ansi -e {fg: ($foreground), bg: ($background)})($in)(ansi reset)"
+        }
     )
 
     if $progress {
@@ -52,8 +54,8 @@ def assert_eq [num: int, expected: string, input_1: float, input_2?] {
 }
 
 def bar_tests [] {
-    assert_eq 1 "[49;39m▏    [0m" 0.03
-    assert_eq 2 "[49;39m▍         [0m" 0.03 10
-    assert_eq 3 "[49;39m▊[0m" 0.71 1
-    assert_eq 4 "[49;39m███████▏  [0m" 0.71 10
+    assert_eq 1 "█▌   " 0.3
+    assert_eq 2 "███       " 0.3 10
+    assert_eq 3 "▊" 0.71 1
+    assert_eq 4 "███████▏  " 0.71 10
 }
