@@ -8,7 +8,7 @@ export def 'take' [
     | if $persistent {
         upsert persistent true
     } else {}
-    | to json -r 
+    | to json -r
     | $'($in)(char nl)'
     | save -a -r ~/.note.jsonl
 }
@@ -30,5 +30,5 @@ def 'nu-complete-notes-names' [] {
 }
 
 def 'open-notes' [] {
-    open ~/.note.jsonl -r | lines | each {|i| $i | from json} 
+    open ~/.note.jsonl -r | from json -o
 }
