@@ -1,5 +1,5 @@
-#   
-# The suitable format is detected automatically. 
+#
+# The suitable format is detected automatically.
 # If VisiData produces STDOUT, it will be assigned to $env.vd_temp.n
 #
 # Examples:
@@ -7,7 +7,7 @@
 def-env 'to vd' [
     --dont_strip_ansi_codes (-S) # ansi codes are stripped by default, this option disables stripping ansi codes.
     --json (-j)     # force to use json
-    --csv (-c)      # force to use csv 
+    --csv (-c)      # force to use csv
 ] {
     let $obj = $in
 
@@ -16,8 +16,8 @@ def-env 'to vd' [
     # > [{a: {c: d}, b: e}] | is_flat
     # false
     def is_flat [] {
-        $in 
-        | describe 
+        $in
+        | describe
         | find -r '^table(?!.*: (table|record|list))'
         | is-empty
         | not $in
@@ -37,7 +37,7 @@ def-env 'to vd' [
             if $vd_temp_index == 0 {
                 {'a1': $value}
             } else {
-                $env.vd_temp 
+                $env.vd_temp
                 # integers in record keys are problematic, so we use 'a' prefix
                 | upsert $'a($vd_temp_index + 1)' ( $value )
             }
@@ -45,23 +45,23 @@ def-env 'to vd' [
         $value
     }
 
-    $obj 
+    $obj
     | if ($obj | describe | $in == 'dataframe') {
-        dfr into-nu 
+        dfr into-nu
         | reject index
-    } else { } 
+    } else { }
     | if ($csv) or (($in | is_flat) and (not $json)) {
         to csv
         | if not $dont_strip_ansi_codes {
             ansi strip
-        } else { } 
+        } else { }
         | vd --filetype csv
     } else {
-        to json -r 
+        to json -r
         | if not $dont_strip_ansi_codes {
             ansi strip
-        } else { } 
-        | vd --filetype json 
+        } else { }
+        | vd --filetype json
     }
     | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
     | if ($in != null) {
