@@ -1,3 +1,4 @@
+# Format big numbers nicely
 export def number-format [
     num                             # Number to format
     --thousands_delim (-t) = ' '    # Thousands delimiter: number-format 1000 -t ': 1'000
@@ -12,43 +13,30 @@ export def number-format [
         | split row "."
     )
 
-    let whole_part = (
+    let $whole_part = (
         $parts.0
         | split chars
         | reverse
-        | reduce -n -f [] {
-            |it, acc| if ((($it.index + 1) mod 3) == 0) {
-                $acc.item
-                | append $it.item
-                | append $thousands_delim
-            } else {
-                $acc.item
-                | append $it.item
-            }
+        | enumerate
+        | reduce -f [] { |it, acc|
+            $acc
+            | append $it.item
+            | if ((($it.index + 1) mod 3) == 0) {
+                append $thousands_delim
+            } else { }
         }
         | reverse
-    )
-
-    let whole_part2 = (
-        if ($whole_part | first) == $thousands_delim {
-            ($whole_part | skip 1)
-        } else {
-            $whole_part
-        }
+        | if ($in | first) == $thousands_delim {
+            skip 1
+        } else { }
         | str join ''
-    )
-
-    let whole_part3 = (
-        if $whole_part_length == 0 {
-            $whole_part2
-        } else {
-            $whole_part2
-            | fill -w $whole_part_length -c ' ' -a r
+        | if $whole_part_length == 0 { } else {
+            fill -w $whole_part_length -c ' ' -a r
         }
     )
 
     let dec_part = (
-        if ($parts | length) == 1 {
+        if ($parts | length) == 1 { # i.e. there are no symbols after '.' in the given number
             "0"
         } else {
             $parts.1
@@ -59,10 +47,10 @@ export def number-format [
         if $decimal_digits == 0 {
             ""
         } else {
-            $".($dec_part)" | fill -w ($decimal_digits + 1) -c '0' -a l
+            $".($dec_part)"
+            | fill -w ($decimal_digits + 1) -c '0' -a l
         }
     )
 
-    let out = $"(ansi green)($whole_part3)($dec_part2)(ansi reset)(ansi green_bold)($denom)(ansi reset)"
-    $out
+    $"(ansi green)($whole_part)($dec_part2)(ansi reset)(ansi green_bold)($denom)(ansi reset)"
 }
