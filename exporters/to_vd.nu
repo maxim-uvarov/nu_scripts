@@ -42,7 +42,19 @@ def-env 'to vd' [
                 | upsert $'a($vd_temp_index + 1)' ( $value )
             }
         )
-        $value
+
+        let $val_length = ($value | length)
+
+        if $val_length > 6 {
+            print $'The (ansi green)$env.vd_temp.($env.vd_temp | columns | last)(ansi reset) variable is set. It has ($val_length) rows.'
+            print 'The first 3 and the last 3 of them are shown below.'
+
+            $value | first 3
+            | append ($value | columns | reduce -f {} {|col acc| $acc | merge {$col : '*'}})
+            | append ($value | last 3)
+        } else {
+            $value
+        }
     }
 
     $obj
