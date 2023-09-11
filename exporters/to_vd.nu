@@ -6,8 +6,8 @@
 # > history | to vd
 def-env 'to vd' [
     --dont_strip_ansi_codes (-S) # ansi codes are stripped by default, this option disables stripping ansi codes.
-    --json (-j)     # force to use json
-    --csv (-c)      # force to use csv
+    --json (-j)     # force to use json for piping data to VD
+    --csv (-c)      # force to use csv for piping data to VD
 ] {
     let $obj = $in
 
@@ -67,15 +67,15 @@ def-env 'to vd' [
         | if not $dont_strip_ansi_codes {
             ansi strip
         } else { }
-        | vd --filetype csv
+        | vd --save-filetype json --filetype csv -o -
     } else {
         to json -r
         | if not $dont_strip_ansi_codes {
             ansi strip
         } else { }
-        | vd --filetype json
+        | vd --save-filetype json --filetype json -o -
     }
-    | from tsv  # vd will output tsv if you quit with `ctrl + shift + q`
+    | from json  # vd will output the final sheet `ctrl + shift + q`
     | if ($in != null) {
         set-temp-env $in
     }
