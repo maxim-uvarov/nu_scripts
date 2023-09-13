@@ -78,26 +78,50 @@ export def main [
 
     def colorit [] {
         let text = ($in | split chars)
-        mut agg = []
-        mut open_tag = true
+        # mut agg = []
+        # mut open_tag = true
 
-        for i in $text {
+        # for i in $text {
+        #     if $i == '*' {
+        #         if $open_tag {
+        #             $open_tag = false
+        #             $agg = ($agg | append $'(ansi reset)(ansi $highlight_color)')
+        #         } else {
+        #             $open_tag = true
+        #             $agg = ($agg | append $'(ansi reset)(ansi $color)')
+        #         }
+        #     } else {
+        #         $agg = ($agg | append $i)
+        #     }
+        # }
+
+        $text
+        | reduce -f {open_tag: true, char: []} {
+            |i acc|
             if $i == '*' {
-                if $open_tag {
-                    $open_tag = false
-                    $agg = ($agg | append $'(ansi reset)(ansi $highlight_color)')
+                if $acc.open_tag {
+                    {
+                        open_tag: false,
+                        char: ($acc.char | append $'(ansi reset)(ansi $highlight_color)')
+                    }
                 } else {
-                    $open_tag = true
-                    $agg = ($agg | append $'(ansi reset)(ansi $color)')
+                    {
+                        open_tag: true,
+                        char: ($acc.char | append $'(ansi reset)(ansi $color)')
+                    }
                 }
             } else {
-                $agg = ($agg | append $i)
+                $acc | upsert char ($acc.char | append $i)
             }
         }
-
-        $agg
+        | get char
         | str join
         | $'(ansi $color)($in)(ansi reset)'
+
+
+        # $agg
+        # | str join
+        # | $'(ansi $color)($in)(ansi reset)'
     }
 
     def frameit [] {
@@ -125,7 +149,7 @@ export def main [
         $text_args
         | str join ' '
         | compactit
-        # | colorit
+        | colorit
         | if $frame != ' ' {
             frameit
         } else {}
