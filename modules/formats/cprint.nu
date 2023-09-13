@@ -39,12 +39,10 @@ export def main [
             $line_length = ($line_length + 1)
             if $line_length > $width_safe {
                 if $last_space_index != -1 {
-                    # $agg = ($agg | update $last_space_index "\n")
                     $agg = ($agg | append [{index: $last_space_index char: "\n"}])
                     $line_length = $total_length - $last_space_index
                     $last_space_index = -1
                 } else {
-                    # $agg = ($agg | append "\n")
                     $agg = ($agg | append [{index: $last_space_index char: $"($i)\n"}])
                     $line_length = 0
                 }
@@ -78,50 +76,35 @@ export def main [
 
     def colorit [] {
         let text = ($in | split chars)
-        # mut agg = []
-        # mut open_tag = true
-
-        # for i in $text {
-        #     if $i == '*' {
-        #         if $open_tag {
-        #             $open_tag = false
-        #             $agg = ($agg | append $'(ansi reset)(ansi $highlight_color)')
-        #         } else {
-        #             $open_tag = true
-        #             $agg = ($agg | append $'(ansi reset)(ansi $color)')
-        #         }
-        #     } else {
-        #         $agg = ($agg | append $i)
-        #     }
-        # }
 
         $text
-        | reduce -f {open_tag: true, char: []} {
+        | enumerate
+        | reduce -f [{open_tag: true}] {
             |i acc|
-            if $i == '*' {
-                if $acc.open_tag {
-                    {
+            if $i.item == '*' {
+                if ($acc | last | get open_tag) {
+                    $acc
+                    | append {
                         open_tag: false,
-                        char: ($acc.char | append $'(ansi reset)(ansi $highlight_color)')
+                        char: $'(ansi reset)(ansi $highlight_color)'
+                        index: $i.index
                     }
                 } else {
-                    {
+                    $acc
+                    | append {
                         open_tag: true,
-                        char: ($acc.char | append $'(ansi reset)(ansi $color)')
+                        char: $'(ansi reset)(ansi $color)'
+                        index: $i.index
                     }
                 }
-            } else {
-                $acc | upsert char ($acc.char | append $i)
-            }
+            } else {$acc}
         }
-        | get char
+        | skip # the first line
+        | reduce -f $text {
+            |i acc| $acc | update $i.index $i.char
+        }
         | str join
         | $'(ansi $color)($in)(ansi reset)'
-
-
-        # $agg
-        # | str join
-        # | $'(ansi $color)($in)(ansi reset)'
     }
 
     def frameit [] {
