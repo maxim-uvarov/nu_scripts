@@ -6,11 +6,11 @@ def-env md [dir] {
 }
 
 def is-cid [particle: string] {
-    ($particle =~ '^Qm\w{44}$') 
+    ($particle =~ '^Qm\w{44}$')
 }
 
 def is-neuron [particle: string] {
-    ($particle =~ '^bostrom1\w{38}$') 
+    ($particle =~ '^bostrom1\w{38}$')
 }
 
 def is-connected []  {
@@ -43,7 +43,7 @@ def 'backup' [
 
     if (
         $filename
-        | path exists 
+        | path exists
     ) {
         cp $filename $"($to_folder)/($filename1.stem)(now).($filename1.extension)" -v -r
         # print $"Previous version of ($filename) is backed up to ($path2)"
@@ -82,7 +82,7 @@ def 'fill non-exist' [
 ] {
     let tbl = ($in | default $tbl)
     let cols = ($tbl | each {|i| $i | columns} | flatten | uniq | reduce --fold {} {|i acc| $acc | merge {$i : $value}})
-    
+
     $tbl | each {|i| $cols | merge $i}
 }
 
@@ -106,8 +106,8 @@ def 'mygit log' [
     --message (-m): string
 ] {
     let $message = ($message | default (date now | format date "%Y-%m-%d"))
-    cd $folder; 
-    git commit -a -m $message 
+    cd $folder;
+    git commit -a -m $message
 }
 
 def "nu-complete-my-folders-for-git" [] {
@@ -116,7 +116,7 @@ def "nu-complete-my-folders-for-git" [] {
         '~/apps-files/github/nu_scripts/'
         '~/.config/'
     ] | each {|i| $"'($i)'"}
-} 
+}
 
 def 'repeat' [
     from_command?: string@'nu-complete-history-commands'
@@ -126,10 +126,10 @@ def 'repeat' [
     let $from_command = (
         try {
             $hist
-            | reverse 
+            | reverse
             | get (
-                $from_command 
-                | into int 
+                $from_command
+                | into int
                 | $in
             )
         } catch {$from_command}
@@ -137,7 +137,7 @@ def 'repeat' [
     let $hist = ($hist | reverse | take until {|i| $i == $from_command} | append $from_command | reverse)
     let $hist = (
         if $to_command == null {
-            $hist 
+            $hist
         } else {
             $hist | skip while {|i| $i == $to_command}
         }
@@ -166,7 +166,7 @@ def whatnow [] {
     } | uniq)
 
     let commands = (
-        $nu.scope.commands 
+        $nu.scope.commands
         | select name signatures usage
         | update signatures { |item| $item.signatures | transpose | get column1 }
         | rename name signature usage
@@ -180,7 +180,7 @@ def whatnow [] {
         | where { |command| ($command.signature.0.syntax_shape) in $matched_types }
     )
 
-    let commands_with_simplified_signatures = ($matching_commands | par-each { |command| 
+    let commands_with_simplified_signatures = ($matching_commands | par-each { |command|
        let input = ($command.signature | where parameter_type == input | get 0)
        let output = ($command.signature | where parameter_type == output | get 0)
        let positionals = ($command.signature | where parameter_type == positional)
@@ -265,15 +265,76 @@ export def commit_type [] {
         WIP: "🚧"
         release: "📦"
 
-    } 
+    }
 }
 
 export def "git icommit" [] {
     let prefix = $"(ansi red_bold)>(ansi reset)"
     let kind = (commit_type | columns | input list $"($prefix) Commit Kind: ")
     let msg = (input $"($prefix) Commit Message: ")
-    
-    
+
+
    git commit -m $"($kind) (commit_type | get $kind): ($msg)"
 
+}
+
+# copy nushell tables for docuemntation striping ansi codes
+# [[a b]; [1 2] [3 4] [a null]] | pbcopy-strip
+# ╭─a─┬─b─╮
+# │ 1 │ 2 │
+# │ 3 │ 4 │
+# │ a │   │
+# ╰───┴───╯
+export def 'pbcopy-strip' [] {
+    $in | pbcopy;
+    sleep 0.5sec;
+    pbpaste | ansi strip | pbcopy;
+}
+
+# > 1..10 | wrap a | merge ($in | rename b) | truncate table -c
+# ╭─a──┬─b──╮
+# │  1 │  1 │
+# │  2 │  2 │
+# │  3 │  3 │
+# │ *  │ *  │
+# │  8 │  8 │
+# │  9 │  9 │
+# │ 10 │ 10 │
+# ╰────┴────╯
+export def 'truncate table' [
+    --copy (-c) # strip ansi codes from output table and copy it to clipboard
+] {
+    let $value = $in
+    let $val_length = ($value | length)
+
+    if $val_length > 6 {
+        $value | first 3
+        | append ($value | columns | reduce -f {} {|col acc| $acc | merge {$col : '*'}})
+        | append ($value | last 3)
+    } else {
+        $value
+    }
+    | if $copy {
+        pbcopy-strip
+    } else {}
+}
+
+
+export def example [
+    --dont_copy (-C)
+    --dont_comment (-H)
+] {
+    $in | truncate table | pbcopy-strip;
+
+    history
+    | last
+    | get command
+    | str replace -r '\| example.*' ''
+    | $'> ($in)(char nl)(pbpaste)'
+    | if not $dont_comment {
+        lines
+        | each {|i| $'# ($i)'}
+        | str join (char nl)
+    } else {}
+    | if not $dont_copy {let result = $in; $in | pbcopy; $result} else {}
 }
