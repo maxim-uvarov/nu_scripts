@@ -12,6 +12,7 @@ export def main [
     --echo (-e)                 # Echo text string instead of printing
     --keep_single_breaks        # Don't remove single line breaks
     --width (-w): int = 80      # The width of text to format it
+    --indent (-i): int = 0
 ] {
     let $width_safe = (
         term size
@@ -31,7 +32,8 @@ export def main [
             | str replace -a '⏎' "\n\n"
         }
         | str replace -r -a '[\t ]+$' ''
-        | str replace -r -a $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
+        | str replace -r -a $"\(.{1,($width_safe - $indent)}\)\(\\s|$\)|\(.{1,($width_safe - $indent)}\)" "$1$3\n"
+        | str replace -r -a '(?m)^(.)' $'((char sp) * $indent)$1'
     }
 
     def colorit [] {
