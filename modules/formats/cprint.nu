@@ -16,51 +16,11 @@ export def main [
     let $width_safe = (
         term size
         | get columns
-        | ($in // ($frame | str length))
-        | $in - 1
         | [$in $width] | math min
         | [$in 1] | math max    # term size gives 0 in tests
     )
 
-    def wrapline [
-        line: string
-    ] {
-        if (($width == 0) or ($line | str length | $in <= $width_safe)) {
-            return $line
-        }
-
-        let text = ($line | split chars)
-        mut agg = []
-        mut line_length = 0
-        mut last_space_index = -1
-        mut total_length = 0
-
-        for i in $text {
-            $line_length = ($line_length + 1)
-            if $line_length > $width_safe {
-                if $last_space_index != -1 {
-                    $agg = ($agg | append [{index: $last_space_index char: "\n"}])
-                    $line_length = $total_length - $last_space_index
-                    $last_space_index = -1
-                } else {
-                    $agg = ($agg | append [{index: $last_space_index char: $"($i)\n"}])
-                    $line_length = 0
-                }
-            }
-
-            if $i == ' ' {
-                $last_space_index = $total_length
-            }
-            # $agg = ($agg | append $i)
-            $total_length = ($total_length + 1)
-        }
-
-        $agg
-        | reduce -f $text {|i acc| $acc | update $i.index $i.char}
-        | str join
-    }
-
-    def compactit [] {
+    def wrapit [] {
         $in
         | if $keep_single_breaks {
             str replace -r -a '^[\t ]+' ''
@@ -70,54 +30,31 @@ export def main [
             | str replace -r -a '\n' ' '    # remove single line breaks used for code formatting
             | str replace -a '⏎' "\n\n"
         }
-        | lines
-        | each {|i| $i | str trim | wrapline $in}
-        | str join "\n"
+        | str replace -r -a '[\t ]+$' ''
+        | str replace -r -a $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
     }
 
     def colorit [] {
-        let text = ($in | split chars)
-
-        $text
-        | enumerate
-        | reduce -f [{open_tag: true}] {
-            |i acc|
-            if $i.item == '*' {
-                if ($acc | last | get open_tag) {
-                    $acc
-                    | append {
-                        open_tag: false,
-                        char: $'(ansi reset)(ansi $highlight_color)'
-                        index: $i.index
-                    }
-                } else {
-                    $acc
-                    | append {
-                        open_tag: true,
-                        char: $'(ansi reset)(ansi $color)'
-                        index: $i.index
-                    }
-                }
-            } else {$acc}
-        }
-        | skip # the first line
-        | reduce -f $text {
-            |i acc| $acc | update $i.index $i.char
-        }
-        | str join
-        | $'(ansi $color)($in)(ansi reset)'
+        str replace -r -a '\*(.*?)\*' $"(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)"
     }
 
     def frameit [] {
         let $text = $in;
-        let $line = (
+        let $width_frame = (
+            $width_safe
+            | ($in // ($frame | str length))
+            | $in - 1
+            | [$in 1] | math max
+        )
+
+        let $frame_line = (
             ' '
-            | fill -a r -w $width_safe -c $frame
+            | fill -a r -w $width_frame -c $frame
             | $'(ansi $frame_color)($in)(ansi reset)'
         )
 
         (
-            $line + "\n" + $text + "\n" + $line
+            $frame_line + "\n" + $text + "\n" + $frame_line
         )
     }
 
@@ -132,7 +69,7 @@ export def main [
     (
         $text_args
         | str join ' '
-        | compactit
+        | wrapit
         | colorit
         | if $frame != ' ' {
             frameit
