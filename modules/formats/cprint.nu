@@ -66,7 +66,8 @@ export def main [
             str replace -r -a '^[\t ]+' ''
         } else {
             str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
-            | str replace -r -a '\n?[\t ]+' ' '    # remove single line breaks used for code formatting
+            | str replace -r -a '^[\t ]+' ''    # remove single line breaks used for code formatting
+            | str replace -r -a '\n' ' '    # remove single line breaks used for code formatting
             | str replace -a '⏎' "\n\n"
         }
         | lines
