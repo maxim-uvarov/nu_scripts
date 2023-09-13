@@ -6,9 +6,9 @@ export def main [
     --color (-c): any = 'default'
     --highlight_color (-h): any = 'green_bold'
     --frame_color (-r): any = 'dark_gray'
-    --frame (-f): string = ' '  # A symbol (or a string) to frame text
-    --before (-b): int = 0      # A number of new lines before text
-    --after (-a): int = 1       # A number of new lines after text
+    --frame (-f): string = ''   # A symbol (or a string) to frame a text
+    --before (-b): int = 0      # A number of new lines before a text
+    --after (-a): int = 1       # A number of new lines after a text
     --echo (-e)                 # Echo text string instead of printing
     --keep_single_breaks        # Don't remove single line breaks
     --width (-w): int = 80      # The width of text to format it
@@ -26,8 +26,8 @@ export def main [
             str replace -r -a '^[\t ]+' ''
         } else {
             str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
-            | str replace -r -a '^[\t ]+' ''    # remove single line breaks used for code formatting
-            | str replace -r -a '\n' ' '    # remove single line breaks used for code formatting
+            | str replace -r -a '^[\t ]+' ''
+            | str replace -r -a '\n' ' '        # remove single line breaks used for code formatting
             | str replace -a '⏎' "\n\n"
         }
         | str replace -r -a '[\t ]+$' ''
@@ -43,7 +43,6 @@ export def main [
         let $width_frame = (
             $width_safe
             | ($in // ($frame | str length))
-            | $in - 1
             | [$in 1] | math max
         )
 
@@ -59,11 +58,7 @@ export def main [
     }
 
     def newlineit [] {
-        let $text = $in
-
-        print ("\n" * $before) -n
-        print $text -n
-        print ("\n" * $after) -n
+        $"((char nl) * $before)($in)((char nl) * $after)"
     }
 
     (
@@ -71,9 +66,10 @@ export def main [
         | str join ' '
         | wrapit
         | colorit
-        | if $frame != ' ' {
+        | if $frame != '' {
             frameit
         } else {}
-        | if $echo { } else { newlineit }
+        | newlineit
+        | if $echo { } else { print -n $in }
     )
 }
