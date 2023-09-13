@@ -39,11 +39,13 @@ export def main [
             $line_length = ($line_length + 1)
             if $line_length > $width_safe {
                 if $last_space_index != -1 {
-                    $agg = ($agg | update $last_space_index "\n")
+                    # $agg = ($agg | update $last_space_index "\n")
+                    $agg = ($agg | append [{index: $last_space_index char: "\n"}])
                     $line_length = $total_length - $last_space_index
                     $last_space_index = -1
                 } else {
-                    $agg = ($agg | append "\n")
+                    # $agg = ($agg | append "\n")
+                    $agg = ($agg | append [{index: $last_space_index char: $"($i)\n"}])
                     $line_length = 0
                 }
             }
@@ -51,11 +53,12 @@ export def main [
             if $i == ' ' {
                 $last_space_index = $total_length
             }
-            $agg = ($agg | append $i)
+            # $agg = ($agg | append $i)
             $total_length = ($total_length + 1)
         }
 
         $agg
+        | reduce -f $text {|i acc| $acc | update $i.index $i.char}
         | str join
     }
 
@@ -122,7 +125,7 @@ export def main [
         $text_args
         | str join ' '
         | compactit
-        | colorit
+        # | colorit
         | if $frame != ' ' {
             frameit
         } else {}
