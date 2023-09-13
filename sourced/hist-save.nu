@@ -5,8 +5,8 @@ def 'hist-save' [
 	let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
 	let name = $"history(date now | date format '%Y%m%d-%H%M%S')"
 
-	history -l 
-	| where session_id == (history session) 
+	history -l
+	| where session_id == (history session)
 	| get command
 	| save $"($dir)/($name).nu"
 
@@ -25,7 +25,7 @@ def 'hs' [
 	let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
 
 	let hist_raw = (
-		history -l 
+		history -l
 		| last 200
 	)
 
@@ -35,7 +35,7 @@ def 'hs' [
 
 	let $hist = (
 		| $hist_raw
-		| where session_id == ($session) 
+		| where session_id == ($session)
 		| get command
 	)
 
@@ -49,13 +49,13 @@ def 'hs' [
 			| drop 1
 		} else {
 		  $hist
-			| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def") or ($i =~ '\bsave\b')}
+			| filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def") or ($i =~ '\bsave\b') or ($i =~ 'source')}
 			| append "\n\n"
 			| prepend $"#($name)"
 		}
 	)
 
-		$buffer | save $"($dir)/($name).nu" -a	
+		$buffer | save $"($dir)/($name).nu" -a
 
 	# print $"file saved ($dir)/($name).nu"
 
@@ -72,8 +72,8 @@ def 'hs-line' [
 	let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
 	let name = $"history(history session).nu"
 
-	history -l 
-	| where session_id == (history session) 
+	history -l
+	| where session_id == (history session)
 	| get command
 	| last 2
 	| first 1
@@ -92,7 +92,7 @@ def 'hs-line' [
 # 	let name = $"history(date now | date format '%Y%m%d-%H%M%S')"
 
 # 	history
-# 	| get command 
-# 	| last $count 
+# 	| get command
+# 	| last $count
 # 	| save $"/Users/user/apps-files/github/nushell_playing/($name).nu"
 # }
