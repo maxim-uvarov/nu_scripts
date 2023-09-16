@@ -33,11 +33,13 @@ export def main [
         }
         | str replace -r -a '[\t ]+$' ''
         | str replace -r -a $"\(.{1,($width_safe - $indent)}\)\(\\s|$\)|\(.{1,($width_safe - $indent)}\)" "$1$3\n"
+        | str replace -r $'(char nl)$' ''       # trailing new line
         | str replace -r -a '(?m)^(.)' $'((char sp) * $indent)$1'
     }
 
     def colorit [] {
         str replace -r -a '\*(.*?)\*' $"(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)"
+        | $'(ansi $color)($in)(ansi reset)'
     }
 
     def frameit [] {
