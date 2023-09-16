@@ -278,19 +278,6 @@ export def "git icommit" [] {
 
 }
 
-# copy nushell tables for docuemntation striping ansi codes
-# [[a b]; [1 2] [3 4] [a null]] | pbcopy-strip
-# ╭─a─┬─b─╮
-# │ 1 │ 2 │
-# │ 3 │ 4 │
-# │ a │   │
-# ╰───┴───╯
-export def 'pbcopy-strip' [] {
-    $in | pbcopy;
-    sleep 0.5sec;
-    pbpaste | ansi strip | pbcopy;
-}
-
 # > 1..10 | wrap a | merge ($in | rename b) | truncate table -c
 # ╭─a──┬─b──╮
 # │  1 │  1 │
@@ -315,26 +302,32 @@ export def 'truncate table' [
         $value
     }
     | if $copy {
-        pbcopy-strip
+        table
+        | ansi strip
+        | pbcopy
     } else {}
 }
 
-
+# output a command from a pipe where `example` used, and truncate an output table
 export def example [
     --dont_copy (-C)
     --dont_comment (-H)
+    --indentation_spaces (-i) = 1
 ] {
-    $in | truncate table | pbcopy-strip;
+    let $in_table = ($in | truncate table | table | ansi strip)
+    use std clip
 
     history
     | last
     | get command
     | str replace -r '\| example.*' ''
-    | $'> ($in)(char nl)(pbpaste)'
+    | $'> ($in)(char nl)($in_table)'
     | if not $dont_comment {
         lines
-        | each {|i| $'# ($i)'}
+        | each {|i| $'#(" " * $indentation_spaces)($i)'}
         | str join (char nl)
     } else {}
-    | if not $dont_copy {let result = $in; $in | pbcopy; $result} else {}
+    | if not $dont_copy {
+        $in | clip
+    } else {}
 }
