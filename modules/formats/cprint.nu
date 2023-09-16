@@ -23,11 +23,9 @@ export def main [
 
     def wrapit [] {
         $in
-        | if $keep_single_breaks {
-            str replace -r -a '^[\t ]+' ''
-        } else {
+        | str replace -r -a '(?m)^[\t ]+' ''
+        | if $keep_single_breaks { } else {
             str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
-            | str replace -r -a '^[\t ]+' ''
             | str replace -r -a '\n' ' '        # remove single line breaks used for code formatting
             | str replace -a '⏎' "\n\n"
         }
@@ -38,7 +36,7 @@ export def main [
     }
 
     def colorit [] {
-        str replace -r -a '\*(.*?)\*' $"(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)"
+        str replace -r -a '\*([\s\S]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
         | $'(ansi $color)($in)(ansi reset)'
     }
 
