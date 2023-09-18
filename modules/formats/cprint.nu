@@ -44,7 +44,7 @@ export def main [
         let $text = $in;
         let $width_frame = (
             $width_safe
-            | ($in // ($frame | str length))
+            # | ($in // ($frame | str length --grapheme-clusters))
             | [$in 1] | math max
         )
 
