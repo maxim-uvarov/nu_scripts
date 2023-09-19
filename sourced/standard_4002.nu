@@ -315,7 +315,6 @@ export def example [
     --indentation_spaces (-i) = 1
 ] {
     let $in_table = ($in | truncate table | table | ansi strip)
-    use std clip
 
     history
     | last
@@ -324,7 +323,7 @@ export def example [
     | $'> ($in)(char nl)($in_table)'
     | if not $dont_comment {
         lines
-        | each {|i| $'#(" " * $indentation_spaces)($i)'}
+        | each {|i| $'#(seq 1 $indentation_spaces | each {" "} | str join '')($i)'}
         | str join (char nl)
     } else {}
     | if not $dont_copy {
