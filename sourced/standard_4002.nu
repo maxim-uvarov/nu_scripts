@@ -1,6 +1,8 @@
 # create directory and cd into it.
+use std clip
+
 def-env md [dir] {
-  let dir = ($dir | path expand | into string)
+  let dir = ($dir | into string | path expand)
   mkdir $dir
   cd $dir
 }
@@ -102,20 +104,21 @@ def "nu-complete gpt completions" [] {
 # }
 
 def 'mygit log' [
-    folder?: string@'nu-complete-my-folders-for-git'
     --message (-m): string
 ] {
     let $message = ($message | default (date now | format date "%Y-%m-%d"))
-    cd $folder;
-    git commit -a -m $message
-}
 
-def "nu-complete-my-folders-for-git" [] {
     [
         '~/Library/Application Support/nushell'
         '~/apps-files/github/nu_scripts/'
         '~/.config/'
-    ] | each {|i| $"'($i)'"}
+    ] | path expand
+    | each {
+        |folder|
+        cd $folder;
+        git add --all
+        git commit -a -m $message
+    }
 }
 
 def 'repeat' [
@@ -278,7 +281,7 @@ export def "git icommit" [] {
 
 }
 
-# > 1..10 | wrap a | merge ($in | rename b) | truncate table -c
+# > 1..10 | wrap a | merge ($in | rename b) | abbreviate -c
 # ╭─a──┬─b──╮
 # │  1 │  1 │
 # │  2 │  2 │
@@ -288,7 +291,7 @@ export def "git icommit" [] {
 # │  9 │  9 │
 # │ 10 │ 10 │
 # ╰────┴────╯
-export def 'truncate table' [
+export def 'abbreviate' [
     --copy (-c) # strip ansi codes from output table and copy it to clipboard
 ] {
     let $value = $in
@@ -296,7 +299,7 @@ export def 'truncate table' [
 
     if $val_length > 6 {
         $value | first 3
-        | append ($value | columns | reduce -f {} {|col acc| $acc | merge {$col : '*'}})
+        | append ($value | columns | reduce -f {} {|col acc| $acc | merge {$col : '…'}})
         | append ($value | last 3)
     } else {
         $value
@@ -314,7 +317,7 @@ export def example [
     --dont_comment (-H)
     --indentation_spaces (-i) = 1
 ] {
-    let $in_table = ($in | truncate table | table | ansi strip)
+    let $in_table = ($in | abbreviate | table | ansi strip)
 
     history
     | last

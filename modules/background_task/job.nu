@@ -83,7 +83,7 @@ export def 'parse' [
 }
 
 # get job running status
-export def status_old () {
+export def status_old [
     pueue status --json
     | from json
     | get tasks
