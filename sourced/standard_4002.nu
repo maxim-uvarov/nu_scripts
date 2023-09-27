@@ -108,6 +108,9 @@ def 'mygit log' [
 ] {
     let $message = ($message | default (date now | format date "%Y-%m-%d"))
 
+    glob $'("~" | path expand)/.*' --no-dir
+    | each {|i| cp --update $i ('~/.config/dot_home_dir' | path expand)}
+
     [
         '~/Library/Application Support/nushell'
         '~/apps-files/github/nu_scripts/'
