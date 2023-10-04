@@ -115,6 +115,7 @@ def 'mygit log' [
         '~/Library/Application Support/nushell'
         '~/apps-files/github/nu_scripts/'
         '~/.config/'
+        '~/.visidata/'
     ] | path expand
     | each {
         |folder|
