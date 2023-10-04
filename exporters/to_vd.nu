@@ -80,3 +80,31 @@ def-env 'to vd' [
         set-temp-env $in
     }
 }
+
+# Open nushell commands history in visidata
+export def 'to vdh' [
+    --entries: int = 5000 # the number of last entries to work with
+    --session (-s)  # show only entries from session
+] {
+    $in
+    | default (history -l)
+    | if $session {
+        where session_id == (history session)
+    } else if $entries == 0 {} else {
+        last $entries
+    }
+    | reverse
+    | upsert duration_s {|i| $i.duration | into int | $in / (10 ** 9)}
+    | reject item_id duration hostname
+    | move start_timestamp --after command
+    | upsert pipes {|i| $i.command | split row -r '\s\|\s' | length}
+    | to csv
+    | vd --save-filetype csv --filetype csv -o -
+    | if ($in == null) { return } else { }
+    | from csv
+    | get command
+    | reverse
+    | str join $';(char nl)'
+    | str replace -r ';.+?\| to vd;' ';'
+    | commandline $in
+}
