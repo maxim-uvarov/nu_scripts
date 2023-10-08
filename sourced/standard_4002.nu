@@ -328,12 +328,22 @@ export def example [
     | get command
     | str replace -r '\| example.*' ''
     | $'> ($in)(char nl)($in_table)'
-    | if not $dont_comment {
+    | if $dont_comment {} else {
         lines
         | each {|i| $'#(seq 1 $indentation_spaces | each {" "} | str join '')($i)'}
         | str join (char nl)
-    } else {}
-    | if not $dont_copy {
-        $in | clip
-    } else {}
+    }
+    | if $dont_copy {} else {
+        clip
+    } 
+}
+
+# copy this command to clipboard
+export def 'copy-cmd' [] {
+    history
+    | last
+    | get command
+    | str replace -r '\| copy-cmd.*' ''
+    | str trim
+    | clip
 }

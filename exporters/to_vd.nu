@@ -1,4 +1,5 @@
 # Open data in VisiData🔥
+#
 # The suitable format is detected automatically.
 # If VisiData produces STDOUT, it will be assigned to $env.vd_temp.n
 #
