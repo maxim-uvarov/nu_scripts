@@ -78,16 +78,6 @@ def 'py-graph-contract-update' [] {
     }
 }
 
-def 'fill non-exist' [
-    tbl?
-    --value = null
-] {
-    let tbl = ($in | default $tbl)
-    let cols = ($tbl | each {|i| $i | columns} | flatten | uniq | reduce --fold {} {|i acc| $acc | merge {$i : $value}})
-
-    $tbl | each {|i| $cols | merge $i}
-}
-
 def 'gp' [
     ...rest: string@"nu-complete gpt completions"
 ] {
@@ -335,7 +325,7 @@ export def example [
     }
     | if $dont_copy {} else {
         clip
-    } 
+    }
 }
 
 # copy this command to clipboard
