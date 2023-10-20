@@ -109,6 +109,7 @@ def 'mygit log' [
     ] | path expand
     | each {
         |folder|
+        print $folder;
         cd $folder;
         git add --all
         git commit -a -m $message
