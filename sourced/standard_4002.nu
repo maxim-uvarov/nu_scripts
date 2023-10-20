@@ -99,7 +99,7 @@ def 'mygit log' [
     let $message = ($message | default (date now | format date "%Y-%m-%d"))
 
     glob $'("~" | path expand)/.*' --no-dir
-    | each {|i| cp --no-clobber $i ('~/.config/dot_home_dir' | path expand)}
+    | each {|i| cp $i ('~/.config/dot_home_dir' | path expand)}
 
     [
         '~/Library/Application Support/nushell'
