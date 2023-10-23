@@ -107,10 +107,9 @@ def 'mygit log' [
         '~/.config/'
         '~/.visidata/'
     ] | path expand
-    | each {
-        |folder|
-        print $folder;
-        cd $folder;
+    | each { |dir|
+        print $dir;
+        cd $dir;
         git add --all
         git commit -a -m $message
     }
