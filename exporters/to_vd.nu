@@ -1,14 +1,16 @@
+use /Users/user/git/nushell-kv/kv.nu
+
 # Open data in VisiData🔥
 #
 # The suitable format is detected automatically.
 # If VisiData produces STDOUT, it will be assigned to $env.vd_temp.n
 #
 # Examples:
-# > history | to vd
-def-env 'to vd' [
+# > history | in-vd
+def-env 'in-vd' [
     --dont_strip_ansi_codes (-S) # ansi codes are stripped by default, this option disables stripping ansi codes.
-    --json (-j)     # force to use json for piping data to VD
-    --csv (-c)      # force to use csv for piping data to VD
+    --json (-j)     # force to use json for piping data in-vd
+    --csv (-c)      # force to use csv for piping data in-vd
 ] {
     let $obj = $in
 
@@ -78,20 +80,21 @@ def-env 'to vd' [
     }
     | from json  # vd will output the final sheet `ctrl + shift + q`
     | if ($in != null) {
-        set-temp-env $in
+        kv set vd
     }
 }
 
 # Open nushell commands history in visidata
-export def 'to vdh' [
+export def 'history-in-vd' [
     --entries: int = 5000 # the number of last entries to work with
+    --all                   # return all the history
     --session (-s)  # show only entries from session
 ] {
     $in
     | default (history -l)
     | if $session {
         where session_id == (history session)
-    } else if $entries == 0 {} else {
+    } else if ($entries == 0) or $all {} else {
         last $entries
     }
     | reverse
@@ -106,6 +109,6 @@ export def 'to vdh' [
     | get command
     | reverse
     | str join $';(char nl)'
-    | str replace -r ';.+?\| to vd;' ';'
+    | str replace -r ';.+?\| in-vd;' ';'
     | commandline $in
 }
