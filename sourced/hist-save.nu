@@ -19,7 +19,7 @@ def 'hs' [
     filename?
     --dir: string
     --dont_open (-O)
-    --up (-u) = 0
+    --up (-u): int = 0
     --all
 ] {
     let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
