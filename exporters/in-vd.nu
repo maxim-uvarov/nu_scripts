@@ -7,7 +7,7 @@ use /Users/user/git/nushell-kv/kv.nu
 #
 # Examples:
 # > history | in-vd
-def-env 'in-vd' [
+def 'in-vd' [
     --dont_strip_ansi_codes (-S) # ansi codes are stripped by default, this option disables stripping ansi codes.
     --json (-j)     # force to use json for piping data in-vd
     --csv (-c)      # force to use csv for piping data in-vd
@@ -24,40 +24,6 @@ def-env 'in-vd' [
         | find -r '^table(?!.*: (table|record|list))'
         | is-empty
         | not $in
-    }
-
-    def-env set-temp-env [
-        value
-    ] {
-        let $vd_temp_index = (
-            $env.vd_temp?
-            | default {}
-            | columns
-            | length
-        )
-
-        $env.vd_temp = (
-            if $vd_temp_index == 0 {
-                {'a1': $value}
-            } else {
-                $env.vd_temp
-                # integers in record keys are problematic, so we use 'a' prefix
-                | upsert $'a($vd_temp_index + 1)' ( $value )
-            }
-        )
-
-        let $val_length = ($value | length)
-
-        if $val_length > 6 {
-            print $'The (ansi green)$env.vd_temp.($env.vd_temp | columns | last)(ansi reset) variable is set. It has ($val_length) rows.'
-            print 'The first 3 and the last 3 of them are shown below.'
-
-            $value | first 3
-            | append ($value | columns | reduce -f {} {|col acc| $acc | merge {$col : '*'}})
-            | append ($value | last 3)
-        } else {
-            $value
-        }
     }
 
     $obj
