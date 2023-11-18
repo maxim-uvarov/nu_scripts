@@ -38,9 +38,12 @@ export def spawn-old [
 }
 
 export def log [
-    id: int   # id to fetch log
+    id: int = -1   # id to fetch log
 ] {
-    pueue log $id -f --json
+    if $id == -1 {
+        status | last | get id
+    } else { $id }
+    | pueue log $in -f --json
     | from json
     | transpose -i info
     | flatten --all
@@ -65,6 +68,9 @@ export def status [
     | get tasks
     | values
     | reject envs enqueued_at original_command
+    | select status command ($in | columns)
+    | upsert status {|i| if ($i.status | describe | str starts-with 'record') {$i.status | get done} else {$i.status}}
+    | upsert command {|i| $i.command | str replace -r ' --config.*' ''}
 }
 
 export def 'parse' [
@@ -74,7 +80,7 @@ export def 'parse' [
         | upsert created_at {|b| $b.created_at | into datetime}
         | upsert start {|b| if $b.start != null {$b.start | into datetime}}
         | upsert end {|b| if $b.end != null {$b.end | into datetime}}
-        | upsert duration {|b| if $b.end != $nothing {$b.end - $b.start}}
+        | upsert duration {|b| if $b.end != null {$b.end - $b.start}}
         | upsert command {|b| $b.command | split row " --config \"" | get 0}
     }
     | reject end
