@@ -22,20 +22,55 @@ def 'hs' [
     --up (-u): int = 0
     --all
 ] {
-    let $dir = ($dir | default $"/Users/user/apps-files/github/nushell_playing/")
+    let $path = (
+        if ($dir == null) {
+            [
+                (pwd)
+                "/Users/user/apps-files/github/nushell_playing/"
+                'type your variant'
+                'use gum'
+            ]
+            | input list 'choose directory'
+            | if ($in | path exists) {} else {
+                match $in {
+                    'type your variant' => {input 'type your variant'},
+                    'use gum' => {
+                        gum file --directory (pwd)
+                        | str trim -c (char nl)
+                        | if ($in | path type) == 'file' {
+                            path basename
+                        } else {}
+                    }
+                }
+            }
+            | if ($in | path exists) {} else {
+                error make {msg: $"the path ($in) doesn't exist"}
+            }
+    }
+    )
+    let $session = (history session)
+    let $hist_raw = (history -l | where session_id == $session)
 
-    let hist_raw = (
-        history -l | where session_id == (history session)
+    let $name = (
+        $filename
+        | if ($in != null) {} else {
+            [
+                ($"history($session)"),
+                'type your variant'
+            ] | input list
+            | if ($in == 'type your variant') {
+                input 'type your variant: '
+            } else {}
+        }
     )
 
-    let $session = ($hist_raw | last | get session_id )
-
-    let name = ($filename | default ($"history($session)"))
+    let $filepath = ($path | path join $"($name).nu")
 
     let $hist = (
         | $hist_raw
         | where session_id == ($session)
         | get command
+        | each {|i| $i | str replace -ar $';(char nl)\$.*? in-vd' ''}
     )
 
     let buffer = (
@@ -47,19 +82,17 @@ def 'hs' [
             $hist
             | drop 1
         } else {
-          $hist
-            | filter {|i| ($i =~ "^let ") or ($i =~ "#") or ($i =~ "^def") or ($i =~ '\bsave\b') or ($i =~ 'source')}
+            $hist
+            | filter {|i| ($i =~ "^(let|def) ") or ($i =~ "#") or ($i =~ '\bsave\b') or ($i =~ 'source')}
             | append "\n\n"
             | prepend $"#($name)"
         }
     )
 
-        $buffer | save $"($dir)/($name).nu" -a
-
-    # print $"file saved ($dir)/($name).nu"
+    $buffer | save -a $filepath
 
     if not $dont_open {
-        code -n $"($dir | path join $name).nu"
+        code -n $filepath
     }
 }
 
