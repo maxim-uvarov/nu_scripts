@@ -90,7 +90,7 @@ def 'hs' [
             | drop 1
         } else {
             $hist
-            | filter {|i| ($i =~ '(^(let|def))|#|\bsave\b|source|mkdir')}
+            | filter {|i| ($i =~ '(^(let|def|export) )|#|\b(save|source|mkdir)\b')}
             | append "\n\n"
             | prepend $"#($name)"
         }
