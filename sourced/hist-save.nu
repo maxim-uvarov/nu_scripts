@@ -20,7 +20,8 @@ def 'hs' [
     --dir: string
     --dont_open (-O)
     --up (-u): int = 0
-    --all
+    --all               # Save all history into .nu file
+    --directory_hist # get history for a directory instead of session
 ] {
     let $path = (
         if ($dir == null) {
@@ -46,10 +47,17 @@ def 'hs' [
             | if ($in | path exists) {} else {
                 error make {msg: $"the path ($in) doesn't exist"}
             }
-    }
+        } else {}
+        | path expand
     )
     let $session = (history session)
-    let $hist_raw = (history -l | where session_id == $session)
+    let $hist_raw = (
+        history -l
+        | if $directory_hist {
+            where cwd == (pwd)
+        } else {
+            where session_id == $session
+        })
 
     let $name = (
         $filename
@@ -68,7 +76,6 @@ def 'hs' [
 
     let $hist = (
         | $hist_raw
-        | where session_id == ($session)
         | get command
         | each {|i| $i | str replace -ar $';(char nl)\$.*? in-vd' ''}
     )
