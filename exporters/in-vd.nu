@@ -58,14 +58,17 @@ export def 'history-in-vd' [
     --session (-s)  # show only entries from session
 ] {
     $in
-    | if ($in == null) {history -l} else {}
-    | if ($query == '') {} else {
-        where command =~ $query
+    | if $in != null {} else {
+        history -l
+        | if $session {
+            where session_id == (history session)
+        } else if ($entries == 0) or $all {} else {
+            last $entries
+        }
     }
-    | if $session {
-        where session_id == (history session)
-    } else if ($entries == 0) or $all {} else {
-        last $entries
+    | if $query == '' {} else {
+        where command =~ $query
+        | where command !~ 'history-in-vd'
     }
     | reverse
     | upsert duration_s {|i| $i.duration | into int | $in / (10 ** 9)}
