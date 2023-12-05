@@ -52,12 +52,16 @@ def 'in-vd' [
 
 # Open nushell commands history in visidata
 export def 'history-in-vd' [
+    query: string = ''
     --entries: int = 5000 # the number of last entries to work with
     --all                   # return all the history
     --session (-s)  # show only entries from session
 ] {
     $in
-    | default (history -l)
+    | if ($in == null) {history -l} else {}
+    | if ($query == '') {} else {
+        where command =~ $query
+    }
     | if $session {
         where session_id == (history session)
     } else if ($entries == 0) or $all {} else {
