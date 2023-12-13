@@ -1,13 +1,28 @@
+def --env load-conda-info-env [] {
+    if (not (has-env CONDA_INFO)) {
+        export-env {
+            $env.CONDA_INFO = (
+                if not (which mamba | is-empty) {
+                    (mamba info --envs --json --no-banner | from json)
+                } else if not (which conda | is-empty) {
+                    (conda info --envs --json | from json)
+                } else {
+                    null
+                }
+            )
+        }
+    }
+}
+
 # Activate conda environment
 export def --env activate [
-    env_name?: string@'nu-complete conda envs' # name of the environment
+    env_name: string@'nu-complete conda envs' = "base" # name of the environment
 ] {
-    let conda_info = (conda info --envs --json | from json)
-
-    let env_name = if $env_name == null {
-        "base"
-    } else {
-        $env_name
+    load-conda-info-env
+    let conda_info = $env.CONDA_INFO
+    if ($conda_info == null) {
+        print "Error: No Conda or Mamba install could be found in the environment. Please install either and add them to the environment. See: https://www.nushell.sh/book/environment.html for more info"
+        return
     }
 
     let env_dir = if $env_name != "base" {
@@ -110,7 +125,9 @@ def check-if-env-exists [ env_name: string, conda_info: record ] {
 }
 
 def 'nu-complete conda envs' [] {
-    conda info --envs
+    load-conda-info-env
+    $env.CONDA_INFO
+    | get env_vars.CONDA_ENVS
     | lines
     | where not ($it | str starts-with '#')
     | where not ($it | is-empty)

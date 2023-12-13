@@ -88,23 +88,37 @@ def "nu-complete git tags" [] {
 # See `man git-status` under "Short Format"
 # This is incomplete, but should cover the most common cases.
 const short_status_descriptions = {
-  " D": "Deleted"
-  " M": "Modified"
-  "!!": "Ignored"
-  "??": "Untracked"
+  ".D": "Deleted"
+  ".M": "Modified"
+  "!" : "Ignored"
+  "?" : "Untracked"
   "AU": "Staged, not merged"
   "MD": "Some modifications staged, file deleted in work tree"
   "MM": "Some modifications staged, some modifications untracked"
-  "R ": "Renamed"
+  "R.": "Renamed"
+  "UU": "Both modified (in merge conflict)"
 }
 
 def "nu-complete git files" [] {
-  let relevant_statuses = ["??"," M", "MM", "MD", " D"]
-  ^git status --porcelain 
-    | lines 
-      | parse --regex "(?P<short_status>.{2}) (?P<value>.+)" 
-      | where $it.short_status in $relevant_statuses 
-      | insert "description" { |e| $short_status_descriptions | get $e.short_status}
+  let relevant_statuses = ["?",".M", "MM", "MD", ".D", "UU"]
+  ^git status -uall --porcelain=2
+  | lines
+  | each { |$it|
+    if $it starts-with "1 " {
+      $it | parse --regex "1 (?P<short_status>\\S+) (?:\\S+\\s?){6} (?P<value>\\S+)"
+    } else if $it starts-with "2 " {
+      $it | parse --regex "2 (?P<short_status>\\S+) (?:\\S+\\s?){6} (?P<value>\\S+)"
+    } else if $it starts-with "u " {
+      $it | parse --regex "u (?P<short_status>\\S+) (?:\\S+\\s?){8} (?P<value>\\S+)"
+    } else if $it starts-with "? " {
+      $it | parse --regex "(?P<short_status>.{1}) (?P<value>.+)"
+    } else {
+      { short_status: 'unknown', value: $it }
+    }
+  }
+  | flatten
+  | where $it.short_status in $relevant_statuses
+  | insert "description" { |e| $short_status_descriptions | get $e.short_status}
 }
 
 def "nu-complete git built-in-refs" [] {
@@ -154,10 +168,10 @@ export extern "git checkout" [
   --pathspec-from-file: string                    # read pathspec from file
   --progress                                      # force progress reporting
   --quiet(-q)                                     # suppress progress reporting
-  --recurse-submodules: string                    # control recursive updating of submodules
+  --recurse-submodules                            # control recursive updating of submodules
   --theirs(-3)                                    # checkout their version for unmerged files
   --track(-t)                                     # set upstream info for new branch
-  -b: string                                      # create and checkout a new branch
+  -b                                              # create and checkout a new branch
   -B: string                                      # create/reset and checkout a branch
   -l                                              # create reflog for new branch
 ]
@@ -251,7 +265,7 @@ export extern "git pull" [
 # Switch between branches and commits
 export extern "git switch" [
   switch?: string@"nu-complete git switch"        # name of branch to switch to
-  --create(-c): string                            # create a new branch
+  --create(-c)                                    # create a new branch
   --detach(-d): string@"nu-complete git log"      # switch to a commit in a detatched state
   --force-create(-C): string                      # forces creation of new branch, if it exists then the existing branch will be reset to starting point
   --force(-f)                                     # alias for --discard-changes
@@ -363,7 +377,7 @@ export extern "git diff" [
 export extern "git commit" [
   --all(-a)                                           # automatically stage all modified and deleted files
   --amend                                             # amend the previous commit rather than adding a new one
-  --message(-m): string                               # specify the commit message rather than opening an editor
+  --message(-m)                                       # specify the commit message rather than opening an editor
   --no-edit                                           # don't edit the commit message (useful with --amend)
 ]
 
