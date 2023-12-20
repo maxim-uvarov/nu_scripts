@@ -1,7 +1,7 @@
 export def --wrapped main [
     ...rest
 ] {
-    to json -r 
+    to json -r
     | ansi strip
-    | ^fx $rest 
+    | ^fx $rest
 }

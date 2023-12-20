@@ -53,7 +53,7 @@ export def 'history-in-vd' [
     --entries: int = 5000 # the number of last entries to work with
     --all                   # return all the history
     --session (-s)  # show only entries from session
-    --folder # show history of commands from cwd
+    --folder
 ] {
     $in
     | if $in != null {} else {
