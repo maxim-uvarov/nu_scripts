@@ -1,4 +1,4 @@
-# use /Users/user/git/nushell-kv/kv.nu
+use /Users/user/git/nushell-kv/kv.nu
 
 # Open data in VisiData🔥
 #
@@ -45,6 +45,9 @@ def 'in-vd' [
         | vd --save-filetype json --filetype json -o -
     }
     | from json  # vd will output the final sheet `ctrl + shift + q`
+    | if ($in != null) {
+        kv set vd
+    }
 }
 
 # Open nushell commands history in visidata
