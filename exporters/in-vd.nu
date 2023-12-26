@@ -66,13 +66,13 @@ export def 'history-in-vd' [
             where session_id == (history session)
         } else if $folder {
             where cwd == (pwd)
-        } else {}
-        | if $last_x != null {
-            where start_timestamp > (date now | $in - $last_x | format date '%F %X')
-        } else if (($entries == 0) or $all) {} else {
+        } else if ($entries == 0) or $all {} else {
             last $entries
         }
     }
+    | if $last_x != null {
+        where start_timestamp > (date now | $in - $last_x | format date '%F %X')
+    } else {}
     | if $query == '' {} else {
         where command =~ $query
         | where command !~ 'history-in-vd'
