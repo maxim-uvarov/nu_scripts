@@ -57,7 +57,7 @@ export def 'history-in-vd' [
     --all                   # return all the history
     --session (-s)  # show only entries from session
     --folder
-    --duration: duration
+    --last_x: duration # duration for the period to check commands
 ] {
     $in
     | if $in != null {} else {
@@ -70,8 +70,8 @@ export def 'history-in-vd' [
             last $entries
         }
     }
-    | if $duration != null {
-        where start_timestamp > (date now | $in - $duration | format date '%F %X')
+    | if $last_x != null {
+        where start_timestamp > (date now | $in - $last_x | format date '%F %X')
     } else {}
     | if $query == '' {} else {
         where command =~ $query
