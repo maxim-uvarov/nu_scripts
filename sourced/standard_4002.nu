@@ -1,24 +1,4 @@
 # create directory and cd into it.
-use std clip
-
-def-env md [dir] {
-  let dir = ($dir | into string | path expand)
-  mkdir $dir
-  cd $dir
-}
-
-def is-cid [particle: string] {
-    ($particle =~ '^Qm\w{44}$')
-}
-
-def is-neuron [particle: string] {
-    ($particle =~ '^bostrom1\w{38}$')
-}
-
-def is-connected []  {
-    (do -i {http get https://duckduckgo.com/} | describe) == 'raw input'
-}
-
 def 'now' [
     --pretty (-P)
 ] {
@@ -66,18 +46,6 @@ export def 'beep' [] {
 
 def f [] { start . }
 
-def 'py-graph-update' [] {
-    timeit {
-            /Users/user/miniconda3/envs/cyber311/bin/python /Users/user/apps-files/github/bostrom-journal-py2/cyber_localgraph_update.py
-        }
-}
-
-def 'py-graph-contract-update' [] {
-    timeit {
-            /Users/user/miniconda3/envs/cyber311/bin/python /Users/user/apps-files/github/bostrom-journal-py2/graph_append_contract_cyberlinks.py
-    }
-}
-
 def 'gp' [
     ...rest: string@"nu-complete gpt completions"
 ] {
@@ -106,7 +74,8 @@ def 'mygit log' [
         '~/apps-files/github/nu_scripts/'
         '~/.config/'
         '~/.visidata/'
-    ] | path expand
+    ] 
+    | path expand
     | each { |dir|
         print $dir;
         cd $dir;

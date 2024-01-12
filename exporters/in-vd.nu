@@ -75,8 +75,8 @@ export def 'history-in-vd' [
     } else {}
     | if $query == '' {} else {
         where command =~ $query
-        | where command !~ 'history-in-vd'
     }
+    | where command !~ 'history-in-vd'
     | reverse
     | upsert duration_s {|i| $i.duration | into int | $in / (10 ** 9)}
     | reject item_id duration hostname
