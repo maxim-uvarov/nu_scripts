@@ -12,10 +12,12 @@ def agree [
     ( if $default_not { [no yes] } else { [yes no] } | input list $prompt) in [yes]
 }
 
-def --wrapped with-flag [...ns] {
-    if ($in | is-empty) { [] } else {
-        [$ns $in] | flatten
-    }
+def tips [ msg ] {
+    print -e $"(ansi light_gray)($msg)(ansi reset)"
+}
+
+def --wrapped with-flag [...flag] {
+    if ($in | is-empty) { [] } else { [...$flag $in] }
 }
 
 # git status
@@ -47,7 +49,7 @@ export def gst [
     } else if $show {
         git stash show --text
     } else if $all {
-        git stash --all (if $include_untracked {[--include-untracked]} else {[]})
+        git stash --all ...(if $include_untracked {[--include-untracked]} else {[]})
     } else {
         git stash
     }
@@ -80,7 +82,7 @@ export def gb [
             remote: (git branch --remote | lines)
             no-merged: (git branch --no-merged | lines)
         }
-        print ($d | table -n 1 -e)
+        print ($d | table -i 1 -e)
     } else if $delete {
         if $branch in $bs and (agree 'branch will be delete!') {
                 git branch -D $branch
@@ -122,7 +124,7 @@ export def --env gn [
         } else {
             $local
         }
-        git clone (if $submodule {[--recurse-submodules]} else {[]}) $repo $local
+        git clone ...(if $submodule {[--recurse-submodules]} else {[]}) $repo $local
         cd $local
     }
 }
@@ -155,43 +157,44 @@ export def gp [
         let m = if $merge { [] } else { [--rebase] }
         let a = if $autostash {[--autostash]} else {[]}
         let branch = if ($branch | is-empty) { (_git_status).branch } else { $branch }
+        let branch_repr = $'(ansi yellow)($branch)(ansi light_gray)'
         let remote = if ($remote|is-empty) { 'origin' } else { $remote }
         let lbs = git branch | lines | each {|x| $x | str substring 2..}
         let rbs = remote_braches | each {|x| $x.1}
         let prev = (_git_status).branch
         if $branch in $rbs {
             if $branch in $lbs {
-                let bmsg = '* both local and remote have the branch'
+                let bmsg = $'both local and remote have ($branch_repr) branch'
                 if $force {
-                    print $'($bmsg), with --force, push'
+                    tips $'($bmsg), with `--force`, push'
                     git branch -u $'($remote)/($branch)' $branch
                     git push --force
                 } else {
-                    print $'($bmsg), pull'
+                    tips $'($bmsg), pull'
                     if $prev != $branch {
-                        print $'* switch to ($branch)'
+                        tips $'switch to ($branch_repr)'
                         git checkout $branch
                     }
-                    git pull $m $a
+                    git pull ...$m ...$a
                 }
             } else {
-                print "* local doesn't have that branch, fetch"
+                tips $"local doesn't have ($branch_repr) branch, fetch"
                 git checkout -b $branch
                 git fetch $remote $branch
                 git branch -u $'($remote)/($branch)' $branch
-                git pull $m $a -v
+                git pull ...$m ...$a -v
             }
         } else {
-            let bmsg = "* remote doesn't have that branch"
+            let bmsg = $"remote doesn't have ($branch_repr) branch"
             let force = if $force {[--force]} else {[]}
             if $branch in $lbs {
-                print $'($bmsg), set upstream and push'
+                tips $'($bmsg), set upstream and push'
                 git checkout $branch
             } else {
-                print $'($bmsg), create and push'
+                tips $'($bmsg), create and push'
                 git checkout -b $branch
             }
-            git push $force --set-upstream $remote $branch
+            git push ...$force --set-upstream $remote $branch
         }
 
         if $back_to_prev {
@@ -200,7 +203,7 @@ export def gp [
 
         let s = (_git_status)
         if $s.ahead > 0 {
-            print '* remote is behind, push'
+            tips 'remote is behind, push'
             git push
         }
     }
@@ -223,19 +226,20 @@ export def ga [
     if $delete {
         let c = if $cached {[--cached]} else {[]}
         let f = if $force {[--force]} else {[]}
-        git rm $c $f -r $file
+        git rm ...$c ...$f -r $file
     } else if $restore {
         let o = $source | with-flag --source
         let s = if $staged {[--staged]} else {[]}
         let file = if ($file | is-empty) { [.] } else { [$file] }
-        git restore $o $s $file
+        git restore ...$o ...$s ...$file
     } else {
         let a = if $all {[--all]} else {[]}
         let p = if $patch {[--patch]} else {[]}
         let u = if $update {[--update]} else {[]}
         let v = if $verbose {[--verbose]} else {[]}
+        let f = if $force {[--force]} else {[]}
         let file = if ($file | is-empty) { [.] } else { [$file] }
-        git add $a $p $u $v $file
+        git add ...([$a $p $u $v $f $file] | flatten)
     }
 
 }
@@ -251,7 +255,7 @@ export def gc [
     let a = if $all {[--all]} else {[]}
     let n = if $amend {[--amend]} else {[]}
     let k = if $keep {[--no-edit]} else {[]}
-    git commit -v $m $a $n $k
+    git commit -v ...$m ...$a ...$n ...$k
 }
 
 # git diff
@@ -264,7 +268,7 @@ export def gd [
     let w = if $word_diff {[--word-diff]} else {[]}
     let c = if $cached {[--cached]} else {[]}
     let s = if $staged {[--staged]} else {[]}
-    git diff $c $s $w ($file | with-flag)
+    git diff ...$c ...$s ...$w ...($file | with-flag)
 }
 
 # git merge
@@ -277,9 +281,9 @@ export def gm [
 ] {
     let x = if $no_squash { [] } else { [--squash] }
     if ($branch | is-empty) {
-        git merge $x $"origin/(git_main_branch)"
+        git merge ...$x $"origin/(git_main_branch)"
     } else {
-        git merge $x $branch
+        git merge ...$x $branch
     }
     if not $no_squash {
         git commit -v
@@ -310,9 +314,9 @@ export def gr [
     } else {
         let i = if $interactive {[--interactive]} else {[]}
         if ($branch | is-empty) {
-            git rebase $i (git_main_branch)
+            git rebase ...$i (git_main_branch)
         } else {
-            git rebase $i $branch
+            git rebase ...$i $branch
         }
     }
 }
@@ -354,7 +358,7 @@ export def grs [
 ] {
     let h = if $hard {[--hard]} else {[]}
     let cm = $commit | with-flag
-    git reset $h $cm
+    git reset ...$h ...$cm
     if $clean {
         git clean -fd
     }
@@ -562,9 +566,10 @@ export def _git_log [v num] {
         _git_log_stat $num
     } else { {} }
     let r = do -i {
-        git log --reverse -n $num --pretty=%h»¦«%s»¦«%aN»¦«%aE»¦«%aD
+        git log --reverse -n $num --pretty=%h»¦«%s»¦«%aN»¦«%aE»¦«%aD»¦«%D
         | lines
-        | split column "»¦«" sha message author email date
+        | split column "»¦«" sha message author email date refs
+        | update refs { split row ", " | where not ($it | is-empty) }
         | each {|x| ($x| upsert date ($x.date | into datetime))}
     }
     if $v {

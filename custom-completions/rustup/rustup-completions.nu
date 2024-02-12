@@ -1,5 +1,5 @@
 # ------------------ nu-complete commands ------------------
- 
+
 def "nu-complete rustup" [] {
   ^rustup --help 
   | str replace --regex --multiline '(rustup[\s\S]*(?=SUBCOMMANDS:))' '' 
@@ -22,6 +22,7 @@ def "nu-complete rustup toolchain" [] {
 def "nu-complete rustup toolchain list" [] {
   ^rustup toolchain list
   | lines
+  | str replace " (default)" ""
   | append 'stable'
   | append 'beta'
   | append 'nightly'
@@ -39,6 +40,7 @@ def "nu-complete rustup target" [] {
 def "nu-complete rustup target list" [] {
   ^rustup target list
   | lines
+  | str replace " (installed)" ""
 }
 
 def "nu-complete rustup target list --installed" [] {
@@ -47,8 +49,9 @@ def "nu-complete rustup target list --installed" [] {
 }
 
 def "nu-complete rustup update" [] {
-  ^rustup toolchain list
-  | lines
+  ^rustup toolchain list 
+  | lines 
+  | str replace " (default)" ""
 }
 
 def "nu-complete rustup component" [] {
@@ -63,6 +66,7 @@ def "nu-complete rustup component" [] {
 def "nu-complete rustup component list" [] {
   ^rustup component list
   | lines
+  | str replace " (installed)" ""
 }
 
 def "nu-complete rustup component list installed" [] {
@@ -131,7 +135,7 @@ def "nu-complete rustup completions shell" [] {
 # ------------------ export extern commands ------------------
 
 export extern "rustup" [
-   command?: string@"nu-complete rustup"
+  command?: string@"nu-complete rustup"
     --verbose(-v)    # Enable verbose output
     --quiet(-q)      # Disable progress output
     --help(-h)       # Print help information

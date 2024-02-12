@@ -53,7 +53,7 @@ def __cwdhist_editing [] {
     {
         name: open_command_editor
         modifier: alt
-        keycode: char_e
+        keycode: char_o
         mode: [emacs, vi_normal, vi_insert]
         event: { send: openeditor }
     }
@@ -63,7 +63,7 @@ def __cwdhist_switching [] {
     {
         name: cwdhist_switching
         modifier: shift_alt
-        keycode: char_e
+        keycode: char_o
         mode: [emacs, vi_normal, vi_insert]
         event: [
             { send: ExecuteHostCommand, cmd: '$env.cwd_history_full = (not $env.cwd_history_full)' }
@@ -75,6 +75,11 @@ export def empty-sqlite [] {
     # sqlite3 empty.db "VACUUM;"; cat empty.db | gzip | encode base64
     'H4sIAAAAAAAAAwsO9MksSVVIyy/KTSxRMGYQYGBkZHBQUGBgYGCEYhhAZhMLGBn0ihbwglgCZOgeBaNgFIyCUTAKRsEoGAWjYBSMglEwCkYBVQAANHgbMAAQAAA='
     | decode base64 --binary | gzip -d
+}
+
+export def 'cwd history delete' [cwd] {
+    open $env.cwd_history_file
+    | query db $"delete from cwd_history where cwd = '($cwd)';"
 }
 
 export-env {
