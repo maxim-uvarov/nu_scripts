@@ -53,4 +53,3 @@ export def number-format [
     )
 
     $"(ansi green)($whole_part)($dec_part2)(ansi reset)(ansi green_bold)($denom)(ansi reset)"
-}
