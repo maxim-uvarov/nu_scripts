@@ -2,4 +2,7 @@
 
 # ignore the git mailmap file
 .mailmap
-helpers/.wa-secret.nu
+
+check-files.nu
+
+.vscode/
